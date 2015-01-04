@@ -1,0 +1,58 @@
+﻿// Paser specification by Anh-Dung Phan
+
+%{
+open AST
+%}
+
+%token <int> INT
+%token <string> VAR
+%token TRUE FALSE
+%token PLUS MINUS TIMES EQ LE
+%token NEG AND
+%token ASS SKIP SEMI IF THEN ELSE WHILE DO FI OD
+%token LPAR RPAR
+%token EOF
+
+%left SEMI             /* lowest precedence  */
+%left AND               
+%nonassoc NEG 
+%left LE EQ             
+%left MINUS PLUS       
+%left TIMES             /* highest precedence */
+%nonassoc HIGHEST
+
+%start Main
+%type <AExp> AExp
+%type <BExp> BExp
+%type <Stm> Main Stm
+
+%%
+
+Main:
+    Stm EOF                            { $1 }
+
+Stm:
+    VAR ASS AExp                              { Asgn($1,$3) }
+  | SKIP                                      { Skip     }
+  | LPAR Stm RPAR                             { $2 }
+  | Stm SEMI Stm                              { Seq($1,$3) }
+  | IF BExp THEN Stm ELSE Stm FI			  { ITE($2,$4,$6) }
+  | WHILE BExp DO Stm OD					  { While($2,$4) }
+    
+AExp:
+    VAR                                 { Var $1  }
+  | INT                                 { Int $1 }
+  | LPAR AExp RPAR                      { $2 }
+  | AExp PLUS  AExp                     { Add($1,$3) } 
+  | AExp TIMES AExp                     { Mul($1,$3) }  
+  | AExp MINUS AExp                     { Sub($1,$3) } 
+
+BExp:
+    TRUE                                 { TT }
+  | FALSE                                { FF }
+  | AExp EQ AExp                         { Eq($1,$3) } 
+  | AExp LE AExp                         { Ltn($1,$3) } 
+  | LPAR BExp RPAR                       { $2 }
+  | NEG BExp                             { Not $2 } 
+  | BExp AND BExp                        { And($1,$3) }  
+
