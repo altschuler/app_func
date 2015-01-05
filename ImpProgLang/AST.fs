@@ -15,6 +15,8 @@ and  Stm = | Asg of Exp * Exp
            | While of Exp * Stm
            | Block of List<Dec> * Stm
            | Call of Exp
+           | Cond of Exp * Stm * Stm
+           | Return of Exp
 
 and Dec  = | VarDec of string * Exp
-           | ProcDec of String * List<String> * Stm
+           | ProcDec of Boolean * String * List<String> * Stm

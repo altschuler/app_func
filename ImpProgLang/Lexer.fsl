@@ -17,7 +17,13 @@ let keyword s =
     | "while"     -> WHILE
     | "do"        -> DO
     | "proc"      -> PROC
+    | "rec"       -> REC
+    | "return"    -> RETURN
     | "call"      -> CALL
+    | "if"        -> IF
+    | "then"      -> THEN
+    | "else"      -> ELSE
+    | "fi"        -> FI
     | "true"      -> BOOL(true)
     | "false"     -> BOOL(false)
     | "toString"  -> NAME("toString")
