@@ -1,4 +1,4 @@
-{ // Lexer spec. for simple imperative language      Michael R. Hansen 05-01-2014
+﻿{ // Lexer spec. for simple imperative language      Michael R. Hansen 05-01-2014
 module Lexer
 
 open System
@@ -16,6 +16,8 @@ let keyword s =
     | "od"        -> OD
     | "while"     -> WHILE
     | "do"        -> DO
+    | "proc"      -> PROC
+    | "call"      -> CALL
     | "true"      -> BOOL(true)
     | "false"     -> BOOL(false)
     | "toString"  -> NAME("toString")
