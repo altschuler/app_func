@@ -1,0 +1,7 @@
+// Local `n` reference overwrites outer var dec of same name
+let one: 1; output: 0; n: 9;
+    rec proc add1(n) return +(!one, !n)
+in output := add1(2);
+    print toString(!one);
+    print toString(!output)
+end

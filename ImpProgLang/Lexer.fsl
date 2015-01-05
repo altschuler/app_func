@@ -49,6 +49,7 @@ rule tokenize =
   | StringConst { let str = (Encoding.UTF8.GetString(lexbuf.Lexeme))
                   let last = str.Length - 1
                   STRING (str.Remove(last).Remove(0,1)) }
+  | "//" [^ '\n']* '\n' { lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf }
   | "!"         { CONTOF}
   | "("         { LPAR  }
   | ")"         { RPAR  }

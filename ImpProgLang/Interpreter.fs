@@ -32,24 +32,27 @@ let closureOf(ps,st) env = (ps, env, st)
 let nextLoc: unit -> int =  let n = ref 0
                             let f x = (n := !n+1; !n)
                             f
-
+let debug = true
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
-    printfn "Expression: %A" e
+    if debug then printfn "Expression: %A" e
     match e with
-    | Var v        -> //printfn "Im a var! %s\n%s" v (string env)
-                      match Map.find v env with
+    | Var v        -> match Map.find v env with
                       | Reference loc as refl -> (refl,store)
-                      | IntVal i              -> printfn "%s" (string i) ; failwith "errorXXX"
+                      | IntVal _
+                      | BoolVal _
+                      | StringVal _ as sv     -> (sv, store)
                       | _                     -> failwith "errorYYY"
     | ContOf er    -> match exp er env store with
                       | (Reference loc,store1) -> match Map.find loc store1 with
                                                   | SimpVal res -> (res,store1)
-                                                  | _           -> failwith "error"
-                      | _                   -> failwith "error"
+                                                  | _           -> failwith "error2"
+                      | (IntVal _ as e, store)
+                      | (BoolVal _ as e, store)
+                      | (StringVal _ as e, store) -> (e, store)
+                      | _                      -> failwith "error1"
 
     | Apply(f,es) -> let (vals, store1) = expList es env store
-                     //printfn "Apply!!!!!----- %A" (Map.find f env)
                      match Map.find f env with
                      | Primitive f   -> (f vals, store1)
                      | Reference loc ->
@@ -72,24 +75,23 @@ and expList es env store =
 
 // app: Location -> Store -> option<Value> * Store
 and app loc env store args =
-  //printfn "Apply (app) %s \n %s \n IT IS: %s" (string loc) (string store) (string (Map.find loc store))
   match Map.find loc store with
   | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
     // lookup and add args to current store
-    //printfn "PENV %A" pEnv
     let f = fun env' (arg, pArg) ->
-      //printfn "Very args p:%A c:%A" loc store
       let (value, _) = exp arg env' store
       Map.add pArg value env'
+    //printfn "env: %A \npenv: %A" env pEnv
     let pEnv' = List.fold f (unionMap env pEnv) (List.zip args pArgs)
-    let (store', pEnv'') =
-      if not isRec
-      then (store, pEnv')
-      else
-        let loc' = nextLoc()
-        let s' = Map.add loc proc store
-        let e' = Map.add name (Reference loc) pEnv'
-        (s', e')
+    let (store', pEnv'') = (store, pEnv')
+      // TODO: do we get the ref from union with calling environment?
+      // if not isRec
+      // then (store, pEnv')
+      // else
+      //   let loc' = nextLoc()
+      //   let s' = Map.add loc proc store
+      //   let e' = Map.add name (Reference loc) pEnv'
+      //   (s', e')
 
     // exec body statement in new env
     let (res, store2) = stm pBody pEnv'' store'
@@ -99,7 +101,7 @@ and app loc env store args =
 
 // stm: Stm -> Env -> Store -> option<Value> * Store
 and stm st (env:Env) (store:Store) : option<Value> * Store =
-    printfn "Statement: %A" st
+    if debug then printfn "Statement: %A" st
     match st with
     | Cond(e, t, f) ->
       let (res, store') = exp e env store
