@@ -1,14 +1,27 @@
 CC = mono
 CI = fsharpi
 
-LEX = ../bin/fslex.exe
-PAR = ../bin/fsyacc.exe
+LEXGEN = ../bin/fslex.exe
+PARGEN = ../bin/fsyacc.exe
+
+LEX = Lexer
+PAR = Parser
 
 all: build
 
-build:
-	$(CC) $(LEX) Lexer.fsl
-	$(CC) $(PAR) --module Parser Parser.fsy
+$(LEX).fs: $(LEX).fsl
+	@echo Generating lexer...
+	$(CC) $(LEXGEN) $(LEX).fsl
+
+$(PAR).fs: $(PAR).fsy
+	@echo Generating parser...
+	$(CC) $(PARGEN) --module $(PAR) $(PAR).fsy
+
+clean:
+	@rm -rf $(LEX).fs $(PAR).fs
+
+build: $(LEX).fs $(PAR).fs
+	@echo Building...
 	$(CI) Script.fsx
 
-.PHONY: all build
+.PHONY: all clean build
