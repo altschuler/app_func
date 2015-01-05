@@ -39,7 +39,7 @@ let debug = true
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
     if debug then printfn "Expression: %A" e
-
+    // TODO: all the "Val" cases seem redundant
     match e with
     | Var v        -> if debug then printfn "Var: %A" (Map.find v env)
                       match Map.find v env with
@@ -76,44 +76,47 @@ let rec exp e (env:Env) (store:Store) =
     | String s    -> (StringVal s,store)
 
     | Prop(e, propName) ->
-      let arrLoc =
-        match exp e env store with
-        | (Reference loc, _) -> loc
-        | _ -> failwith "indexed expression is not a reference"
-
+      let loc = evalLoc e env store
+      let cnt = findCnt loc store
       let res =
-        match (Map.find arrLoc store, propName) with
-        | (ArrayCnt vals, "length") -> IntVal (List.length vals)
+        match (cnt, propName) with
+        | (ArrayCnt vals, "length") -> IntVal <| List.length vals
         | _ -> failwith "undefined prop on expression type"
 
       (res, store)
 
     | ArrayAcc(arrExp, indexExp)  ->
-      let index =
-        match exp indexExp env store with
-        | (IntVal i, _) -> i
-        | _ -> failwith "invalid array index type"
+      let index = evalInt indexExp env store
+      let arrVals = findArray arrExp env store
 
-      let arrLoc =
-        match exp arrExp env store with
-        | (Reference loc, _) -> loc
-        | _ -> failwith "indexed expression is not a reference"
+      (List.nth arrVals index, store)
 
-      let arr =
-        match Map.find arrLoc store with
-        | ArrayCnt vals -> vals
-        | _ -> failwith "expression is not an array"
-      printfn "THIS IS THE ARRAY: %A" arr
-      (List.nth arr index, store)
+and findCnt loc store =
+  match Map.tryFind loc store with
+  | Some a -> a
+  | _ -> failwith "undefined location"
 
-// and findCnt e env store =
-//   match exp e env store with
-//   | (Reference loc, store') ->
-//     match Map.tryFind loc store' with
-//     | Some v -> v
-//     | None -> failwith "undefined variable" // TODO: nicer error
-//   | (v, _) -> v
+and findArray e env store =
+  let loc = evalLoc e env store
+  let cnt = findCnt loc store
+  match cnt with
+  | ArrayCnt vals -> vals
+  | _ -> failwith "location is not an array"
 
+and evalLoc e env store =
+  match exp e env store with
+  | (Reference loc, _) -> loc
+  | _ -> failwith "expected a reference"
+
+and evalString e env store =
+  match exp e env store with
+  | (StringVal s, _) -> s
+  | _ -> failwith "expected a string"
+
+and evalInt e env store =
+  match exp e env store with
+  | (IntVal i, _) -> i
+  | _ -> failwith "expected an int"
 
 and expList es env store =
     match es with
@@ -171,26 +174,17 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
     | Call(_) -> failwith " invalid CALL syntax" // this should be unreachable
 
     | ArrayAsg(idExp, indexExp, value) ->
-      let index =
-        match exp indexExp env store with
-        | (IntVal i, _) -> i
-        | _ -> failwith "invalid array index type"
+      let index = evalInt indexExp env store
 
-      let arrLoc =
-        match exp indexExp env store with
-        | (Reference loc, _) -> loc
-        | _ -> failwith "indexed expression is not a reference"
+      let loc = evalLoc indexExp env store
 
-      let arr =
-        match Map.find arrLoc store with
-        | ArrayCnt vals -> vals
-        | _ -> failwith "expression is not an array"
+      let arr = findArray idExp env store
 
       let (elem, _) = exp value env store
 
       let updated = setNth arr index elem
 
-      let store' = Map.add arrLoc (ArrayCnt updated) (Map.remove arrLoc store)
+      let store' = Map.add loc (ArrayCnt updated) (Map.remove loc store)
 
       (None, store')
 
@@ -201,9 +195,13 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
                    | _                               -> failwith "type error"
 
 
-    | PrintLn e -> match exp e env store with
-                   | (StringVal s,store1) -> (printfn "%s" s; (None,store1))
-                   | _                    -> failwith "error"
+    | PrintLn e ->
+      let str = evalString e env store
+      printfn "%s" str
+      (None, store)
+      // match exp e env store with
+      //              | (StringVal s,store1) -> (printfn "%s" s; (None,store1))
+      //              | _                    -> failwith "error"
 
 
     | Return e ->
@@ -235,38 +233,28 @@ and decList ds env store =
     | d::drest -> let (env1,store1) = dec d env store
                   decList drest env1 store1
 
-// store ~= memory with locations, env maps
+and addContent cnt name env store =
+  let loc = nextLoc()
+  let env' = Map.add name (Reference loc) env
+  let store' = Map.add loc cnt store
+  (env', store')
+
 and dec d env store =
     if debug then printfn "Declaration: %A" d
     match d with
     | ArrayDec(name, lengthExp, initialExp) ->
-      let length =
-        match exp lengthExp env store with
-        | (IntVal i, _) -> i
-        | _ -> failwith "Invalid array length type"
-
+      let length = evalInt lengthExp env store
       let (initial, _) = exp initialExp env store
       let arr = ArrayCnt <| List.replicate length initial
-      let loc = nextLoc()
-      let env' = Map.add name (Reference loc) env
-      let store' = Map.add loc arr store
-      (env', store')
+      addContent arr name env store
 
     | ProcDec(isRec, name, args, body) ->
       let fn = Proc (name, isRec, args, env, body)
-      let loc = nextLoc()
-      let env2 = Map.add name (Reference loc) env
-      let store2 = Map.add loc fn store
-      //printfn "Add dec %s \n%s" name (string store2)
-      (env2, store2)
+      addContent fn name env store
 
-    | VarDec(s,e) -> let loc = nextLoc()
-                     match exp e env store with
-                     | (IntVal _ as res, store1)
-                     | (BoolVal _ as res, store1)
-                     | (StringVal _ as res, store1) ->
-                       let env2 = Map.add s (Reference loc) env
-                       let store2 = Map.add loc (SimpVal res) store1
-                       (env2, store2)
-                     | _ -> failwith "error"
-;;
+    | VarDec(s,e) ->
+      match exp e env store with
+      | (IntVal _ as res, store1)
+      | (BoolVal _ as res, store1)
+      | (StringVal _ as res, store1) -> addContent (SimpVal res) s env store
+      | _ -> failwith "error"
