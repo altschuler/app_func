@@ -1,0 +1,16 @@
+*.fsproj
+*.sln
+*.v11.suo
+*.pdb
+*.dll
+*.xml
+*.exe
+*.zip
+Debug/
+/ImpProgLang/README.txt
+/WhileInterpreter/README.txt
+/ImpProgLang/Parser.fs
+/ImpProgLang/Parser.fsi
+/ImpProgLang/Lexer.fs
+/ImpProgLang/Parser.fs
+/ImpProgLang/Lexer.fs
