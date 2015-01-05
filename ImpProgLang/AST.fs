@@ -2,14 +2,20 @@
 module AST
 open System
 
+type Id = string
+
 type Exp = | Int of int
            | Bool of bool
            | String of string
-           | Var of string
+           | Var of Id
            | ContOf of Exp
-           | Apply of string * List<Exp>
+           | Apply of Id * List<Exp>
+           | Array of List<Exp>
+           | Prop of Exp * Id // (exp, prop name)
+           | ArrayAcc of Exp * Exp // (arr, index)
 
 and  Stm = | Asg of Exp * Exp
+           | ArrayAsg of Exp * Exp * Exp // (id, index, value)
            | PrintLn of Exp
            | Seq of List<Stm>
            | While of Exp * Stm
@@ -18,5 +24,6 @@ and  Stm = | Asg of Exp * Exp
            | Cond of Exp * Stm * Stm
            | Return of Exp
 
-and Dec  = | VarDec of string * Exp
-           | ProcDec of Boolean * String * List<String> * Stm
+and Dec  = | VarDec of Id * Exp
+           | ProcDec of Boolean * Id * List<Id> * Stm
+           | ArrayDec of Id * Exp * Exp // (name, length, init value)

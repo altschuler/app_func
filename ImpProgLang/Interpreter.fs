@@ -15,14 +15,17 @@ type Value    = | IntVal of int
                 | StringVal of string
                 | Reference of Location
                 | Primitive of (List<Value> -> Value)
+                | ArrayVal of List<Value>
 and Env       = Map<string,Value>
 
 let unionMap (p:Map<'a,'b>) (q:Map<'a,'b>) = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
 
+let setNth ls idx el = List.mapi (fun i el' -> if i = idx then el' else el) ls
+
 // (name, isRed, args, env, body)
 type Closure =  string * Boolean * List<string> * Env * Stm
 
-type Content = SimpVal of Value | Proc of Closure |  ArrayCnt of Value [];;
+type Content = SimpVal of Value | Proc of Closure |  ArrayCnt of List<Value>
 
 type Store  = Map<Location,Content>
 
@@ -36,8 +39,10 @@ let debug = true
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
     if debug then printfn "Expression: %A" e
+
     match e with
-    | Var v        -> match Map.find v env with
+    | Var v        -> if debug then printfn "Var: %A" (Map.find v env)
+                      match Map.find v env with
                       | Reference loc as refl -> (refl,store)
                       | IntVal _
                       | BoolVal _
@@ -53,6 +58,7 @@ let rec exp e (env:Env) (store:Store) =
                       | _                      -> failwith "error1"
 
     | Apply(f,es) -> let (vals, store1) = expList es env store
+                     if debug then printfn "Application exp: %A" f
                      match Map.find f env with
                      | Primitive f   -> (f vals, store1)
                      | Reference loc ->
@@ -62,9 +68,52 @@ let rec exp e (env:Env) (store:Store) =
                        | None -> failwith "WHAT" // TODO: WTF
                      | _             -> failwith "type error"
 
+    | Array es    ->
+      let (vals, store') = expList es env store
+      (ArrayVal vals, store')
     | Int i       -> (IntVal i, store)
     | Bool b      -> (BoolVal b,store)
     | String s    -> (StringVal s,store)
+
+    | Prop(e, propName) ->
+      let arrLoc =
+        match exp e env store with
+        | (Reference loc, _) -> loc
+        | _ -> failwith "indexed expression is not a reference"
+
+      let res =
+        match (Map.find arrLoc store, propName) with
+        | (ArrayCnt vals, "length") -> IntVal (List.length vals)
+        | _ -> failwith "undefined prop on expression type"
+
+      (res, store)
+
+    | ArrayAcc(arrExp, indexExp)  ->
+      let index =
+        match exp indexExp env store with
+        | (IntVal i, _) -> i
+        | _ -> failwith "invalid array index type"
+
+      let arrLoc =
+        match exp arrExp env store with
+        | (Reference loc, _) -> loc
+        | _ -> failwith "indexed expression is not a reference"
+
+      let arr =
+        match Map.find arrLoc store with
+        | ArrayCnt vals -> vals
+        | _ -> failwith "expression is not an array"
+      printfn "THIS IS THE ARRAY: %A" arr
+      (List.nth arr index, store)
+
+// and findCnt e env store =
+//   match exp e env store with
+//   | (Reference loc, store') ->
+//     match Map.tryFind loc store' with
+//     | Some v -> v
+//     | None -> failwith "undefined variable" // TODO: nicer error
+//   | (v, _) -> v
+
 
 and expList es env store =
     match es with
@@ -75,6 +124,7 @@ and expList es env store =
 
 // app: Location -> Store -> option<Value> * Store
 and app loc env store args =
+  if debug then printfn "Apply: %A" loc
   match Map.find loc store with
   | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
     // lookup and add args to current store
@@ -120,6 +170,30 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
 
     | Call(_) -> failwith " invalid CALL syntax" // this should be unreachable
 
+    | ArrayAsg(idExp, indexExp, value) ->
+      let index =
+        match exp indexExp env store with
+        | (IntVal i, _) -> i
+        | _ -> failwith "invalid array index type"
+
+      let arrLoc =
+        match exp indexExp env store with
+        | (Reference loc, _) -> loc
+        | _ -> failwith "indexed expression is not a reference"
+
+      let arr =
+        match Map.find arrLoc store with
+        | ArrayCnt vals -> vals
+        | _ -> failwith "expression is not an array"
+
+      let (elem, _) = exp value env store
+
+      let updated = setNth arr index elem
+
+      let store' = Map.add arrLoc (ArrayCnt updated) (Map.remove arrLoc store)
+
+      (None, store')
+
     | Asg(el,e) -> let (res,store1) = exp e env store
                    let (resl, store2) = exp el env store1
                    match resl with
@@ -163,7 +237,21 @@ and decList ds env store =
 
 // store ~= memory with locations, env maps
 and dec d env store =
+    if debug then printfn "Declaration: %A" d
     match d with
+    | ArrayDec(name, lengthExp, initialExp) ->
+      let length =
+        match exp lengthExp env store with
+        | (IntVal i, _) -> i
+        | _ -> failwith "Invalid array length type"
+
+      let (initial, _) = exp initialExp env store
+      let arr = ArrayCnt <| List.replicate length initial
+      let loc = nextLoc()
+      let env' = Map.add name (Reference loc) env
+      let store' = Map.add loc arr store
+      (env', store')
+
     | ProcDec(isRec, name, args, body) ->
       let fn = Proc (name, isRec, args, env, body)
       let loc = nextLoc()
@@ -176,9 +264,9 @@ and dec d env store =
                      match exp e env store with
                      | (IntVal _ as res, store1)
                      | (BoolVal _ as res, store1)
-                     | (StringVal _ as res, store1)
-                                                 -> let env2 = Map.add s (Reference loc) env
-                                                    let store2 = Map.add loc (SimpVal res) store1
-                                                    (env2, store2)
-                     | _                         -> failwith "error"
+                     | (StringVal _ as res, store1) ->
+                       let env2 = Map.add s (Reference loc) env
+                       let store2 = Map.add loc (SimpVal res) store1
+                       (env2, store2)
+                     | _ -> failwith "error"
 ;;
