@@ -34,6 +34,7 @@ Stm:
   // restrict CALL to this syntax, thus dont use 'Exp'
   | CALL NAME LPAR ExpList RPAR          { Call(Apply($2, $4)) }
   | IF Exp THEN StmList ELSE StmList FI  { Cond($2,Seq $4,Seq $6) }
+  | IF Exp THEN StmList FI  { Cond($2,Seq $4,Seq []) }
   | RETURN Exp                           { Return $2 }
 
 StmList:

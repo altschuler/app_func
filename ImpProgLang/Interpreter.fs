@@ -35,7 +35,7 @@ let nextLoc: unit -> int =  let n = ref 0
 
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
-    //printfn "HEJ! %s" (string e)
+    printfn "Expression: %A" e
     match e with
     | Var v        -> //printfn "Im a var! %s\n%s" v (string env)
                       match Map.find v env with
@@ -99,6 +99,7 @@ and app loc env store args =
 
 // stm: Stm -> Env -> Store -> option<Value> * Store
 and stm st (env:Env) (store:Store) : option<Value> * Store =
+    printfn "Statement: %A" st
     match st with
     | Cond(e, t, f) ->
       let (res, store') = exp e env store
@@ -112,7 +113,7 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
       // find the function reference
       match Map.find n env with
       // find the actual function
-      | Reference loc -> app loc Map.empty store args
+      | Reference loc -> app loc env store args
       | _ -> failwith " is undefined"
 
     | Call(_) -> failwith " invalid CALL syntax" // this should be unreachable
