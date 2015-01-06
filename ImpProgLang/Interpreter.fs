@@ -188,21 +188,17 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
 
       (None, store')
 
-    | Asg(el,e) -> let (res,store1) = exp e env store
-                   let (resl, store2) = exp el env store1
-                   match resl with
-                   | Reference loc -> (None, Map.add loc (SimpVal res) store2)
-                   | _                               -> failwith "type error"
-
+    | Asg(el,e) ->
+      let (res, store1) = exp e env store
+      let (resl, store2) = exp el env store1
+      match resl with
+      | Reference loc -> (None, Map.add loc (SimpVal res) store2)
+      | _             -> failwith "type error"
 
     | PrintLn e ->
       let str = evalString e env store
       printfn "%s" str
       (None, store)
-      // match exp e env store with
-      //              | (StringVal s,store1) -> (printfn "%s" s; (None,store1))
-      //              | _                    -> failwith "error"
-
 
     | Return e ->
       let (res, store') = exp e env store
