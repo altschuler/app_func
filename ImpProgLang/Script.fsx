@@ -1,7 +1,7 @@
 ﻿// Michael R. Hansen 03-01-2014
 
 (* Load the parser and interpreter *)
-#r "FSharp.PowerPack.dll"
+#r "../lib/FSharp.PowerPack.dll"
 
 #load "AST.fs"
 #load "Parser.fs"
@@ -14,7 +14,11 @@ open Interpreter
 open AST
 open ParserUtil
 
-// Functions for an initial environment
+// Variables
+
+let PROGRAM_DIR = "program";;
+
+let filePath f = String.concat "/" [PROGRAM_DIR; f];;
 
 let plusInt = Primitive( function [IntVal i1; IntVal i2] -> IntVal(i1+i2) | _ -> failwith "Invalid arguments" );;
 let minusInt = Primitive( function [IntVal i1; IntVal i2] -> IntVal(i1-i2) | _ -> failwith "Invalid arguments" );;
@@ -54,20 +58,20 @@ let s2 = parseStm "let n: 4; y: 1
 // Set current directory
 System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__;;
 
-let p3 = parseFromFile "Factorial1.while";;
+let p3 = parseFromFile <| filePath "Factorial1.while";;
 // Interpret the statement
 let _ = ignore (stm p3 initEnv Map.empty);;
 
-let p4 = parseFromFile "Factorial2.while";;
+let p4 = parseFromFile <| filePath "Factorial2.while";;
 let _ = ignore (stm p4 initEnv Map.empty);;
 
-let p5 = parseFromFile "Factorial3.while";;
+let p5 = parseFromFile <| filePath "Factorial3.while";;
 let _ = ignore (stm p5 initEnv Map.empty);;
 
-// let p6 = parseFromFile "Factorial4.while";;
+// let p6 = parseFromFile <| filePath "Factorial4.while";;
 // let _ = ignore (stm p6 initEnv Map.empty);;
 
-// let p7 = parseFromFile "Factorial5.while";;
+// let p7 = parseFromFile <| filePath "Factorial5.while";;
 // let _ = ignore (stm p7 initEnv Map.empty);;
 
 
@@ -86,12 +90,12 @@ let randomArray = parseDec "proc randomArray(rng, lng)
 
 // Auxiliary procedures on arrays are in the file "ArrayUtil.while"
 // They are used to built up a basic environment and a basic store
-//let arrayUtilDecs = parseDecListFromFile "ArrayUtil.while";;
+//let arrayUtilDecs = parseDecListFromFile <| filePath "ArrayUtil.while";;
 
 //let (basisEnv, basisStore) = decList arrayUtilDecs initEnv Map.empty;;
 
-//let ap1 = parseFromFile"ArrayProg1.while";;
+//let ap1 = parseFromFile  <| filePath "ArrayProg1.while";;
 //let _ = ignore (stm ap1 basisEnv basisStore);;
 
-//let ap2 = parseFromFile"ArrayProg2.while";;
+//let ap2 = parseFromFile  <| filePath "ArrayProg2.while";;
 //let _ = ignore (stm ap2 basisEnv basisStore);;
