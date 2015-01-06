@@ -9,6 +9,10 @@ module Interpreter
 open System
 open AST
 
+/////////////////////////////////
+// Types
+/////////////////////////////////
+
 type Location = int
 type Value    = | IntVal of int
                 | BoolVal of bool
@@ -18,10 +22,6 @@ type Value    = | IntVal of int
                 | ArrayVal of List<Value>
 and Env       = Map<string,Value>
 
-let unionMap (p:Map<'a,'b>) (q:Map<'a,'b>) = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
-
-let setNth ls idx el = List.mapi (fun i el' -> if i = idx then el' else el) ls
-
 // (name, isRed, args, env, body)
 type Closure =  string * Boolean * List<string> * Env * Stm
 
@@ -29,19 +29,33 @@ type Content = SimpVal of Value | Proc of Closure |  ArrayCnt of List<Value>
 
 type Store  = Map<Location,Content>
 
-let closureOf(ps,st) env = (ps, env, st)
+/////////////////////////////////
+// Utilities
+/////////////////////////////////
+
+let DO_DEBUG = false
+
+let debug s = if DO_DEBUG then printfn "%s" s
+
+let unionMap (p:Map<'a,'b>) (q:Map<'a,'b>) = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
+
+let setNth ls idx el = List.mapi (fun i el' -> if i = idx then el' else el) ls
+
+/////////////////////////////////
+// Functions
+/////////////////////////////////
 
 // nextLoc() generates the next available location
 let nextLoc: unit -> int =  let n = ref 0
                             let f x = (n := !n+1; !n)
                             f
-let debug = true
+
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
-    if debug then printfn "Expression: %A" e
+    debug <| sprintf "Expression: %A" e
     // TODO: all the "Val" cases seem redundant
     match e with
-    | Var v        -> if debug then printfn "Var: %A" (Map.find v env)
+    | Var v        -> debug <| sprintf "Var: %A" (Map.find v env)
                       match Map.find v env with
                       | Reference loc as refl -> (refl,store)
                       | IntVal _
@@ -58,7 +72,7 @@ let rec exp e (env:Env) (store:Store) =
                       | _                      -> failwith "error1"
 
     | Apply(f,es) -> let (vals, store1) = expList es env store
-                     if debug then printfn "Application exp: %A" f
+                     debug <| sprintf "Application exp: %A" f
                      match Map.find f env with
                      | Primitive f   -> (f vals, store1)
                      | Reference loc ->
@@ -127,14 +141,13 @@ and expList es env store =
 
 // app: Location -> Store -> option<Value> * Store
 and app loc env store args =
-  if debug then printfn "Apply: %A" loc
+  debug <| sprintf "Apply: %A" loc
   match Map.find loc store with
   | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
     // lookup and add args to current store
     let f = fun (env', s) (arg, pArg) ->
       let (value, s') = exp arg env' s
       (Map.add pArg value env', s)
-    //printfn "env: %A \npenv: %A" env pEnv
     let (pEnv', store') = List.fold f (unionMap env pEnv, store) (List.zip args pArgs)
     let (pEnv'', store'') = (pEnv', store')
       // TODO: do we get the ref from union with calling environment?
@@ -154,7 +167,7 @@ and app loc env store args =
 
 // stm: Stm -> Env -> Store -> option<Value> * Store
 and stm st (env:Env) (store:Store) : option<Value> * Store =
-    if debug then printfn "Statement: %A" st
+    debug <| sprintf "Statement: %A" st
     match st with
     | Cond(e, t, f) ->
       let (res, store') = exp e env store
@@ -237,8 +250,7 @@ and addContent cnt name env store =
   (env', store')
 
 and dec d env store =
-    printfn "Declaration: %A" d
-    if debug then printfn "Declaration: %A" d
+    debug <| sprintf "Declaration: %A" d
     match d with
     | ArrayDec(name, lengthExp, initialExp) ->
       let (length, store') = evalInt lengthExp env store
