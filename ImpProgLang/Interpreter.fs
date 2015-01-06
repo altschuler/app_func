@@ -19,7 +19,7 @@ type Value    = | IntVal of int
                 | StringVal of string
                 | Reference of Location
                 | Primitive of (List<Value> -> Value)
-                //| ArrayVal of List<Value>
+                | ArrayVal of List<Value>
 and Env       = Map<string,Value>
 
 // (name, isRed, args, env, body)
@@ -54,31 +54,45 @@ let nextLoc: unit -> int =  let n = ref 0
 let rec exp e (env:Env) (store:Store) =
     debug <| sprintf "Expression: %A" e
     match e with
-    | Var v        -> debug <| sprintf "Var: %A" (Map.find v env)
-                      match Map.find v env with // TODO: tryFind
-                      | Reference loc as refl -> (refl,store)
-                      | _                     -> failwith "errorYYY"
+    | Var v ->
+      debug <| sprintf "Var: %A" (Map.find v env)
+      match Map.find v env with // TODO: tryFind
+      | Reference loc as refl -> (refl,store)
+      | _                     -> failwith "errorYYY"
 
-    | ContOf er    -> match exp er env store with
-                      | (Reference loc,store1) -> match Map.find loc store1 with
-                                                  | SimpVal res -> (res,store1)
-                                                  | _           -> failwith "error2"
-                      | _                      -> failwith "error1"
+    | ContOf er ->
+      match exp er env store with
+      | (Reference loc,store1) ->
+        match Map.find loc store1 with
+        | SimpVal res   -> (res,store1)
+        | ArrayCnt vals -> (ArrayVal vals,store1)
+        | _             -> failwith "error2"
+      | _ -> failwith "error1"
 
-    | Apply(f,es) -> debug <| sprintf "Application exp: %A" f
-                     let (vals, store1) = expList es env store
-                     match Map.find f env with
-                     | Primitive f   -> (f vals, store1)
-                     | Reference loc ->
-                       let (res, store) = app loc env store es
-                       match res with
-                       | Some r -> (r, store)
-                       | None -> failwith "WHAT" // TODO: WTF
-                     | _             -> failwith "type error"
+    | Apply(f,es) ->
+      debug <| sprintf "Application exp: %A" f
+      let (vals, store1) = expList es env store
+      match Map.find f env with
+      | Primitive f   -> (f vals, store1)
+      | Reference loc ->
+        let (res, store) = app loc env store es
+        match res with
+        | Some r -> (r, store)
+        | None -> failwith "WHAT" // TODO: WTF
+      | _             -> failwith "type error"
 
-    // | Array es    ->
-    //   let (vals, store') = expList es env store
-    //   (ArrayVal vals, store')
+    | Array es    ->
+      let (vals, store') = expList es env store
+      match vals with
+      | []      -> failwith "empty arrays are not supported"
+      | v :: vs ->
+          let valType = typeOf v store'
+          let typeValid t = typeOf t store' = valType
+          if not (List.forall typeValid vs)
+          then failwith "type of array elements differ"
+
+      (ArrayVal vals, store')
+
     | Int i       -> (IntVal i, store)
     | Bool b      -> (BoolVal b,store)
     | String s    -> (StringVal s,store)
@@ -109,7 +123,7 @@ and findArray e env store =
   let cnt = findCnt loc store'
   match cnt with
   | ArrayCnt vals -> (vals, store')
-  | _ -> failwith "location is not an array"
+  | _ -> failwith (sprintf "location is not an array: %A" cnt)
 
 and evalLoc e env store =
   match exp e env store with
@@ -143,6 +157,7 @@ and typeOf e store =
   | IntVal _ -> IntT
   | BoolVal _ -> BoolT
   | StringVal _ -> StringT
+  | ArrayVal (v::_) -> ArrayT (typeOf v store)
   | Reference loc ->
     let cnt = findCnt loc store
     RefT (typeOfContent cnt store)
@@ -232,8 +247,15 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
     | Asg(name,e) ->
       let (value, store1) = exp e env store
       let (varLoc, store2) = exp name env store1
+      // array literals needs to be wrapped in ArrayCnt, everything
+      // else in SimpVal
+      let cnt =
+        match value with
+        | ArrayVal vals -> ArrayCnt vals
+        | v -> SimpVal v
+
       match varLoc with
-      | Reference loc -> (None, Map.add loc (SimpVal value) store2)
+      | Reference loc -> (None, Map.add loc cnt store2)
       | _             -> failwith "type error"
 
     | PrintLn e ->

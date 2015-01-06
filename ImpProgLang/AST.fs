@@ -15,7 +15,7 @@ type Exp = | Int of int
            | Var of Id
            | ContOf of Exp
            | Apply of Id * List<Exp>
-           //| Array of List<Exp>
+           | Array of List<Exp>
            | Prop of Exp * Id // (exp, prop name)
            | ArrayAcc of Exp * Exp // (arr, index)
 
