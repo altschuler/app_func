@@ -26,7 +26,6 @@ let keyword s =
     | "fi"        -> FI
     | "true"      -> BOOL(true)
     | "false"     -> BOOL(false)
-    | "toString"  -> NAME("toString")
     | _           -> NAME s
 }
 
@@ -39,6 +38,7 @@ let int = digit+
 let identifier  = char(char|digit|['_'])*
 let quote                 = '\"'
 let StringConst           = quote ([^'\"'])* quote
+let operator = ('<' | '>' | '*' | '-' | '+' | '=' | '/')+
 
 
 rule tokenize =
@@ -60,11 +60,6 @@ rule tokenize =
   | ","         { COMMA }
   | ":="        { ASG }
   | "."         { DOT }
-  | "<>"        { NAME("<>") }
-  | "<"         { NAME("<") }
-  | "*"         { NAME("*") }
-  | "-"         { NAME("-") }
-  | "="         { NAME("=") }
-  | "+"         { NAME("+") }
+  | operator    { BINOP(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
   | identifier  { keyword(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
   | eof         { EOF }

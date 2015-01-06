@@ -33,7 +33,7 @@ type Store  = Map<Location,Content>
 // Utilities
 /////////////////////////////////
 
-let DO_DEBUG = false
+let DO_DEBUG = true
 
 let debug s = if DO_DEBUG then printfn "%s" s
 

@@ -7,6 +7,7 @@ open AST
 %token <bool> BOOL
 %token <string> STRING
 %token <string> NAME
+%token <string> BINOP
 %token TRUE FALSE
 %token ASG SKIP SEMI WHILE DO OD CONTOF LET IN END PROC CALL RETURN REC IF THEN ELSE FI
 %token COLON COMMA PRINT DOT
@@ -20,6 +21,9 @@ open AST
 %type <Dec list> DecList
 %type <Stm list> StmList
 %type <Stm> Main Stm
+
+%left BINOP
+%nonassoc CONTOF
 
 %%
 
@@ -68,6 +72,7 @@ Exp:
   | CONTOF Exp                           { ContOf $2 }
   | LPAR Exp RPAR                        { $2 }
   | NAME LPAR ExpList RPAR               { Apply($1, $3) }
+  | Exp BINOP Exp                        { Apply($2, [$1; $3]) }
 
 ExpList:
                                         { [ ] }
