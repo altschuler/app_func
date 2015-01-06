@@ -76,20 +76,20 @@ let rec exp e (env:Env) (store:Store) =
     | String s    -> (StringVal s,store)
 
     | Prop(e, propName) ->
-      let loc = evalLoc e env store
-      let cnt = findCnt loc store
+      let (loc, store') = evalLoc e env store
+      let cnt = findCnt loc store'
       let res =
         match (cnt, propName) with
         | (ArrayCnt vals, "length") -> IntVal <| List.length vals
         | _ -> failwith "undefined prop on expression type"
 
-      (res, store)
+      (res, store')
 
     | ArrayAcc(arrExp, indexExp)  ->
-      let index = evalInt indexExp env store
-      let arrVals = findArray arrExp env store
+      let (index, store') = evalInt indexExp env store
+      let (arrVals, store'') = findArray arrExp env store'
 
-      (List.nth arrVals index, store)
+      (List.nth arrVals index, store'')
 
 and findCnt loc store =
   match Map.tryFind loc store with
@@ -97,25 +97,25 @@ and findCnt loc store =
   | _ -> failwith "undefined location"
 
 and findArray e env store =
-  let loc = evalLoc e env store
-  let cnt = findCnt loc store
+  let (loc, store') = evalLoc e env store
+  let cnt = findCnt loc store'
   match cnt with
-  | ArrayCnt vals -> vals
+  | ArrayCnt vals -> (vals, store')
   | _ -> failwith "location is not an array"
 
 and evalLoc e env store =
   match exp e env store with
-  | (Reference loc, _) -> loc
+  | (Reference loc, store) -> (loc, store)
   | _ -> failwith "expected a reference"
 
 and evalString e env store =
   match exp e env store with
-  | (StringVal s, _) -> s
+  | (StringVal s, store) -> (s, store)
   | _ -> failwith "expected a string"
 
 and evalInt e env store =
   match exp e env store with
-  | (IntVal i, _) -> i
+  | (IntVal i, store) -> (i, store)
   | _ -> failwith "expected an int"
 
 and expList es env store =
@@ -174,19 +174,19 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
     | Call(_) -> failwith " invalid CALL syntax" // this should be unreachable
 
     | ArrayAsg(idExp, indexExp, value) ->
-      let index = evalInt indexExp env store
+      let (index, store1) = evalInt indexExp env store
 
-      let loc = evalLoc indexExp env store
+      let (loc, store2) = evalLoc indexExp env store1
 
-      let arr = findArray idExp env store
+      let (arr, store3) = findArray idExp env store2
 
-      let (elem, _) = exp value env store
+      let (elem, store4) = exp value env store3
 
       let updated = setNth arr index elem
 
-      let store' = Map.add loc (ArrayCnt updated) (Map.remove loc store)
+      let store5 = Map.add loc (ArrayCnt updated) (Map.remove loc store4)
 
-      (None, store')
+      (None, store5)
 
     | Asg(el,e) ->
       let (res, store1) = exp e env store
@@ -196,9 +196,9 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
       | _             -> failwith "type error"
 
     | PrintLn e ->
-      let str = evalString e env store
+      let (str, store') = evalString e env store
       printfn "%s" str
-      (None, store)
+      (None, store')
 
     | Return e ->
       let (res, store') = exp e env store
@@ -239,7 +239,7 @@ and dec d env store =
     if debug then printfn "Declaration: %A" d
     match d with
     | ArrayDec(name, lengthExp, initialExp) ->
-      let length = evalInt lengthExp env store
+      let (length, store') = evalInt lengthExp env store
       let (initial, _) = exp initialExp env store
       let arr = ArrayCnt <| List.replicate length initial
       addContent arr name env store
