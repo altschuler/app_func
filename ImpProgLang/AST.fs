@@ -4,6 +4,8 @@ open System
 
 type Id = string
 
+type Type = IntT | BoolT | StringT | ArrT of Type
+
 type Exp = | Int of int
            | Bool of bool
            | String of string

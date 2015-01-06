@@ -1,4 +1,4 @@
-﻿let
+let
     proc randomArray(ran, len)
         let
             a[!len] : 0;

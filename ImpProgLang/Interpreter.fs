@@ -33,7 +33,7 @@ type Store  = Map<Location,Content>
 // Utilities
 /////////////////////////////////
 
-let DO_DEBUG = true
+let DO_DEBUG = false
 
 let debug s = if DO_DEBUG then printfn "%s" s
 
@@ -58,21 +58,16 @@ let rec exp e (env:Env) (store:Store) =
     | Var v        -> debug <| sprintf "Var: %A" (Map.find v env)
                       match Map.find v env with
                       | Reference loc as refl -> (refl,store)
-                      | IntVal _
-                      | BoolVal _
-                      | StringVal _ as sv     -> (sv, store)
                       | _                     -> failwith "errorYYY"
+
     | ContOf er    -> match exp er env store with
                       | (Reference loc,store1) -> match Map.find loc store1 with
                                                   | SimpVal res -> (res,store1)
                                                   | _           -> failwith "error2"
-                      | (IntVal _ as e, store)
-                      | (BoolVal _ as e, store)
-                      | (StringVal _ as e, store) -> (e, store)
                       | _                      -> failwith "error1"
 
-    | Apply(f,es) -> let (vals, store1) = expList es env store
-                     debug <| sprintf "Application exp: %A" f
+    | Apply(f,es) -> debug <| sprintf "Application exp: %A" f
+                     let (vals, store1) = expList es env store
                      match Map.find f env with
                      | Primitive f   -> (f vals, store1)
                      | Reference loc ->

@@ -1,0 +1,8 @@
+let int n: 4; int y: 1
+in while !n <> (0 + 1)
+   do y := !n * !y;
+      n := !n - 1;
+      print toString(!n);
+      print toString(!y)
+   od
+end
