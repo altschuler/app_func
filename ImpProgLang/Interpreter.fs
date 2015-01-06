@@ -222,9 +222,8 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
       let (arr, store2) = findArray idExp env store1
 
       let (elem, store3) = exp value env store
-      printfn "BEFORE: %A" arr
+
       let updated = setNth arr index elem
-      printfn "AFTER:  %A" updated
 
       let store5 = Map.add loc (ArrayCnt updated) (Map.remove loc store3)
 
