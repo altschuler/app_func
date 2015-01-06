@@ -1,19 +1,20 @@
 let
-    proc randomArray(ran, len)
+    proc ~int[] randomArray(~int ran, ~int len)
         let
-            a[!len] : 0;
-            i       : 0
+            int a[!len] : 0;
+            int i       : 0
         in
             while !i < a.length do
                 a[!i] := randomInt(!ran);
+                print toString(a[!i]);
                 i     := !i + 1
             od;
             return a
         end;
 
-    proc printArray(a)
+    proc void printArray(~int[] a)
         let
-            i: 0
+            int i: 0
         in
             while !i < a.length do
                 print toString(a[!i]);
@@ -21,10 +22,10 @@ let
             od
         end;
 
-    proc sumArray(a)
+    proc int sumArray(~int[] a)
         let
-            sum: 0;
-            i: 0
+            int sum: 0;
+            int i: 0
         in
             while !i < a.length do
                 sum := !sum + a[!i];
@@ -33,10 +34,10 @@ let
             return !sum
         end;
 
-    rng     : 100;
-    len     : 10;
-    a[!len] : 1;
-    sum     : 0
+    int rng     : 100;
+    int len     : 10;
+    int a[!len] : 1;
+    int sum     : 0
 in
     a := randomArray(rng, len);
     call printArray(!a);

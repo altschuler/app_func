@@ -1,6 +1,9 @@
-let n: 4; y: 1
-in while <>(!n,0)
-   do y := *(!n,!y);
-      n := -(!n,1)
-   od
+let
+    int n: 4;
+    int y: 1
+in
+    while !n <> 0 do
+       y := !n * !y;
+       n := !n - 1
+    od
 end

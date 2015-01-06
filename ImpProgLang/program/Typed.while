@@ -1,5 +1,5 @@
 let
-    int n: true;
+    int n: 4;
     int y: 1
 in
     while !n <> 0 do

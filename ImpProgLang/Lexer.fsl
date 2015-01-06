@@ -28,6 +28,7 @@ let keyword s =
     | "int"       -> INT_T
     | "bool"      -> BOOL_T
     | "string"    -> STRING_T
+    | "void"      -> VOID_T
 
     | "true"      -> BOOL(true)
     | "false"     -> BOOL(false)

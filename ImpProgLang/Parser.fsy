@@ -10,7 +10,7 @@ open AST
 %token <string> BINOP
 %token TRUE FALSE
 %token ASG SKIP SEMI WHILE DO OD CONTOF LET IN END PROC CALL RETURN REC IF THEN ELSE FI
-%token INT_T BOOL_T STRING_T
+%token INT_T BOOL_T STRING_T VOID_T
 %token COLON COMMA PRINT DOT TILDE
 %token LPAR RPAR LBRAC RBRAC
 %token EOF
@@ -32,10 +32,15 @@ Main:
     Stm EOF                             { $1 }
 
 Type:
-    INT_T      { IntT }
-  | BOOL_T     { BoolT }
-  | STRING_T   { StringT }
-  | TILDE Type  { RefT $2 }
+    INT_T             { IntT }
+  | BOOL_T            { BoolT }
+  | STRING_T          { StringT }
+  | VOID_T            { VoidT }
+  | TILDE Type        { RefT $2 }
+  | Type LBRAC RBRAC  { ArrayT $1 }
+
+TypedName:
+    Type NAME { TypedId($1,$2) }
 
 Stm:
 	NAME ASG Exp                         { Asg(Var $1,$3) }
@@ -55,12 +60,12 @@ StmList:
 
 IdList :
                                         { [] }
-   | Type NAME                          { [TypedId($1,$2)] }
-   | Type NAME COMMA IdList             { TypedId($1,$2) :: $4 }
+   | TypedName                          { [$1] }
+   | TypedName COMMA IdList             { $1 :: $3 }
 
 Dec:
-     Type NAME COLON Exp                      { VarDec(TypedId($1,$2),$4) }
-   | Type NAME LBRAC Exp RBRAC COLON Exp      { ArrayDec(TypedId($1,$2),$4,$7) }
+     TypedName COLON Exp                      { VarDec($1,$3) }
+   | TypedName LBRAC Exp RBRAC COLON Exp      { ArrayDec($1,$3,$6) }
    | PROC Type NAME LPAR IdList RPAR Stm      { ProcDec($2,false,$3,$5,$7) }
    | REC PROC Type NAME LPAR IdList RPAR Stm  { ProcDec($3,true,$4,$6,$8) }
 

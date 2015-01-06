@@ -23,7 +23,7 @@ type Value    = | IntVal of int
 and Env       = Map<string,Value>
 
 // (name, isRed, args, env, body)
-type Closure =  string * Boolean * List<TypedId> * Env * Stm
+type Closure =  Type * string * Boolean * List<TypedId> * Env * Stm
 
 type Content = SimpVal of Value | Proc of Closure |  ArrayCnt of List<Value>
 
@@ -39,7 +39,7 @@ let debug s = if DO_DEBUG then printfn "%s" s
 
 let unionMap (p:Map<'a,'b>) (q:Map<'a,'b>) = Map(Seq.concat [ (Map.toSeq p) ; (Map.toSeq q) ])
 
-let setNth ls idx el = List.mapi (fun i el' -> if i = idx then el' else el) ls
+let setNth ls idx el = List.mapi (fun i el' -> if i = idx then el else el') ls
 
 /////////////////////////////////
 // Functions
@@ -151,9 +151,11 @@ and typeOf e store =
 and typeOfContent cnt store =
   match cnt with
   | SimpVal v       -> typeOf v store
-  | Proc cloj       -> ProcT (IntT, [IntT]) // TODO: fix lulz
   | ArrayCnt (v::_) -> ArrayT (typeOf v store)
   | ArrayCnt []     -> failwith "empty arrays are not supported"
+  | Proc (ty, _, _, pArgs, _, _) ->
+    let argTypes = List.map (fun (TypedId(argTy, _)) -> argTy) pArgs
+    ProcT (ty, argTypes)
 
 and assertType store value ty =
   let actual = typeOf value store
@@ -165,7 +167,7 @@ and app loc env store args =
   debug <| sprintf "Apply: %A" loc
 
   match Map.find loc store with
-  | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
+  | Proc (ty, name, isRec, pArgs, pEnv, pBody) as proc ->
     // lookup and add args to current store
     let f = fun (env', s) (arg, TypedId (pArgTy, pArg)) ->
       let (value, s') = exp arg env' s
@@ -220,8 +222,9 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
       let (arr, store2) = findArray idExp env store1
 
       let (elem, store3) = exp value env store
-
+      printfn "BEFORE: %A" arr
       let updated = setNth arr index elem
+      printfn "AFTER:  %A" updated
 
       let store5 = Map.add loc (ArrayCnt updated) (Map.remove loc store3)
 
@@ -254,6 +257,7 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
                        | result       -> result
 
     | While(e,st1)  -> let (res, store1) = exp e env store
+                       assertType store1 res BoolT
                        match res with
                        | BoolVal true  -> match stm st1 env store1 with
                                           | (None,store2) -> stm st env store2
@@ -289,7 +293,7 @@ and dec d env store =
       addContent arr name env store''
 
     | ProcDec(ty, isRec, name, args, body) ->
-      let fn = Proc (name, isRec, args, env, body)
+      let fn = Proc (ty, name, isRec, args, env, body)
       addContent fn name env store
 
     | VarDec(TypedId (ty, name),e) ->
