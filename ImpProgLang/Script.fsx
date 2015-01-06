@@ -3,6 +3,7 @@
 (* Load the parser and interpreter *)
 #r "../lib/FSharp.PowerPack.dll"
 
+//#load "Utils.fs"
 #load "AST.fs"
 #load "Parser.fs"
 #load "Lexer.fs"
@@ -58,6 +59,7 @@ let s2 = parseStm "let n: 4; y: 1
 // Set current directory
 System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__;;
 
+
 let p3 = parseFromFile <| filePath "Factorial1.while";;
 // Interpret the statement
 let _ = ignore (stm p3 initEnv Map.empty);;
@@ -73,6 +75,17 @@ let _ = ignore (stm p5 initEnv Map.empty);;
 
 // let p7 = parseFromFile <| filePath "Factorial5.while";;
 // let _ = ignore (stm p7 initEnv Map.empty);;
+
+
+// let p8 = parseFromFile "ClosureScope.while";;
+// let _ = ignore (stm p8 initEnv Map.empty);;
+
+
+// let p9 = parseFromFile "ArrayProg1.while";;
+// let _ = ignore (stm p9 initEnv Map.empty);;
+
+let p10 = parseFromFile <| filePath "ArrayProg2.while";;
+let _ = ignore (stm p10 initEnv Map.empty);;
 
 
 // Parsing and interpreting programs with arrays
