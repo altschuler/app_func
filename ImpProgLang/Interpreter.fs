@@ -176,15 +176,16 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
     | ArrayAsg(idExp, indexExp, value) ->
       let (index, store1) = evalInt indexExp env store
 
-      let (loc, store2) = evalLoc indexExp env store1
+      // ignore the store here, as we get the same below in store2
+      let (loc, _) = evalLoc idExp env store1
 
-      let (arr, store3) = findArray idExp env store2
+      let (arr, store2) = findArray idExp env store1
 
-      let (elem, store4) = exp value env store3
+      let (elem, store3) = exp value env store
 
       let updated = setNth arr index elem
 
-      let store5 = Map.add loc (ArrayCnt updated) (Map.remove loc store4)
+      let store5 = Map.add loc (ArrayCnt updated) (Map.remove loc store3)
 
       (None, store5)
 
@@ -236,13 +237,14 @@ and addContent cnt name env store =
   (env', store')
 
 and dec d env store =
+    printfn "Declaration: %A" d
     if debug then printfn "Declaration: %A" d
     match d with
     | ArrayDec(name, lengthExp, initialExp) ->
       let (length, store') = evalInt lengthExp env store
-      let (initial, _) = exp initialExp env store
+      let (initial, store'') = exp initialExp env store'
       let arr = ArrayCnt <| List.replicate length initial
-      addContent arr name env store
+      addContent arr name env store''
 
     | ProcDec(isRec, name, args, body) ->
       let fn = Proc (name, isRec, args, env, body)
