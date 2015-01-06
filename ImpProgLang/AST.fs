@@ -32,3 +32,4 @@ and  Stm = | Asg of Exp * Exp
 and Dec  = | VarDec of TypedId * Exp
            | ProcDec of Type * Boolean * Id * List<TypedId> * Stm
            | ArrayDec of TypedId * Exp * Exp // (name, length, init value)
+           | Decls of string

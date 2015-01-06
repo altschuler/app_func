@@ -7,6 +7,7 @@
 module Interpreter
 
 open System
+open ParserUtil
 open AST
 
 /////////////////////////////////
@@ -33,7 +34,7 @@ type Store  = Map<Location,Content>
 // Utilities
 /////////////////////////////////
 
-let DO_DEBUG = false
+let DO_DEBUG = true
 
 let debug s = if DO_DEBUG then printfn "%s" s
 
@@ -58,7 +59,7 @@ let rec exp e (env:Env) (store:Store) =
       debug <| sprintf "Var: %A" (Map.find v env)
       match Map.find v env with // TODO: tryFind
       | Reference loc as refl -> (refl,store)
-      | _                     -> failwith "errorYYY"
+      | _                     -> failwith "value must be a reference"
 
     | ContOf er ->
       match exp er env store with
@@ -304,6 +305,11 @@ and addContent cnt name env store =
 and dec d env store =
     debug <| sprintf "Declaration: %A" d
     match d with
+    | Decls(filename) ->
+      let decls = parseDecListFromFile <| (sprintf "%s.while" filename)
+      decList decls env store
+      // TODO: add to store
+
     | ArrayDec(TypedId (ty, name), lengthExp, initialExp) ->
       let (length, store') = evalInt lengthExp env store
       let (initial, store'') = exp initialExp env store'

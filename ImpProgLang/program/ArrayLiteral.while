@@ -1,0 +1,16 @@
+let
+    decls "program/ArrayUtil";
+
+    int arr[3] : 1;
+in
+    print toString(arr[1]); // 1
+
+    arr[1] := 1337;
+    print toString(arr[1]); // 1337
+
+    arr := [5, 6, 7];
+    print toString(arr[1]); // 6
+
+    print toString(!arr);
+    print toString(sumArray(arr))  // 6
+end

@@ -10,20 +10,26 @@ let keyword s =
     match s with
     | "print"     -> PRINT
     | "skip"      -> SKIP
+
     | "let"       -> LET
     | "in"        -> IN
     | "end"       -> END
-    | "od"        -> OD
+
     | "while"     -> WHILE
+    | "od"        -> OD
     | "do"        -> DO
+
     | "proc"      -> PROC
     | "rec"       -> REC
     | "return"    -> RETURN
     | "call"      -> CALL
+
     | "if"        -> IF
     | "then"      -> THEN
     | "else"      -> ELSE
     | "fi"        -> FI
+
+    | "decls"     -> DECLS
 
     | "int"       -> INT_T
     | "bool"      -> BOOL_T
