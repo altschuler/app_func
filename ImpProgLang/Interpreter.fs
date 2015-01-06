@@ -19,11 +19,11 @@ type Value    = | IntVal of int
                 | StringVal of string
                 | Reference of Location
                 | Primitive of (List<Value> -> Value)
-                | ArrayVal of List<Value>
+                //| ArrayVal of List<Value>
 and Env       = Map<string,Value>
 
 // (name, isRed, args, env, body)
-type Closure =  string * Boolean * List<string> * Env * Stm
+type Closure =  string * Boolean * List<TypedId> * Env * Stm
 
 type Content = SimpVal of Value | Proc of Closure |  ArrayCnt of List<Value>
 
@@ -53,10 +53,9 @@ let nextLoc: unit -> int =  let n = ref 0
 // exp: Exp -> Env -> Store -> Value * Store
 let rec exp e (env:Env) (store:Store) =
     debug <| sprintf "Expression: %A" e
-    // TODO: all the "Val" cases seem redundant
     match e with
     | Var v        -> debug <| sprintf "Var: %A" (Map.find v env)
-                      match Map.find v env with
+                      match Map.find v env with // TODO: tryFind
                       | Reference loc as refl -> (refl,store)
                       | _                     -> failwith "errorYYY"
 
@@ -77,9 +76,9 @@ let rec exp e (env:Env) (store:Store) =
                        | None -> failwith "WHAT" // TODO: WTF
                      | _             -> failwith "type error"
 
-    | Array es    ->
-      let (vals, store') = expList es env store
-      (ArrayVal vals, store')
+    // | Array es    ->
+    //   let (vals, store') = expList es env store
+    //   (ArrayVal vals, store')
     | Int i       -> (IntVal i, store)
     | Bool b      -> (BoolVal b,store)
     | String s    -> (StringVal s,store)
@@ -127,6 +126,11 @@ and evalInt e env store =
   | (IntVal i, store) -> (i, store)
   | _ -> failwith "expected an int"
 
+and eval e ty env store =
+  let (v, store') = exp e env store
+  assertType store' v ty
+  (v, store')
+
 and expList es env store =
     match es with
     | []       -> ([],store)
@@ -134,15 +138,42 @@ and expList es env store =
                   let (ress, store2) = expList erest env store1
                   (res1::ress, store2)
 
-// app: Location -> Store -> option<Value> * Store
+and typeOf e store =
+  match e with
+  | IntVal _ -> IntT
+  | BoolVal _ -> BoolT
+  | StringVal _ -> StringT
+  | Reference loc ->
+    let cnt = findCnt loc store
+    RefT (typeOfContent cnt store)
+  | _ -> failwith "unexpected type"
+
+and typeOfContent cnt store =
+  match cnt with
+  | SimpVal v       -> typeOf v store
+  | Proc cloj       -> ProcT (IntT, [IntT]) // TODO: fix lulz
+  | ArrayCnt (v::_) -> ArrayT (typeOf v store)
+  | ArrayCnt []     -> failwith "empty arrays are not supported"
+
+and assertType store value ty =
+  let actual = typeOf value store
+  if actual <> ty
+  then failwith (sprintf "Type mismatch: expected %A, got %A" ty actual)
+
+// app: Location -> Env -> Store -> option<Value> * Store
 and app loc env store args =
   debug <| sprintf "Apply: %A" loc
+
   match Map.find loc store with
   | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
     // lookup and add args to current store
-    let f = fun (env', s) (arg, pArg) ->
+    let f = fun (env', s) (arg, TypedId (pArgTy, pArg)) ->
       let (value, s') = exp arg env' s
+
+      assertType store value pArgTy
+
       (Map.add pArg value env', s)
+
     let (pEnv', store') = List.fold f (unionMap env pEnv, store) (List.zip args pArgs)
     let (pEnv'', store'') = (pEnv', store')
       // TODO: do we get the ref from union with calling environment?
@@ -171,7 +202,6 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
         | BoolVal false -> stm f env store'
         | _ -> failwith "invalid condition type" // TODO: nicer error
 
-    // TODO: clean.it.up
     | Call(Apply(n, args)) ->
       // find the function reference
       match Map.find n env with
@@ -197,17 +227,19 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
 
       (None, store5)
 
-    | Asg(el,e) ->
-      let (res, store1) = exp e env store
-      let (resl, store2) = exp el env store1
-      match resl with
-      | Reference loc -> (None, Map.add loc (SimpVal res) store2)
+    | Asg(name,e) ->
+      let (value, store1) = exp e env store
+      let (varLoc, store2) = exp name env store1
+      match varLoc with
+      | Reference loc -> (None, Map.add loc (SimpVal value) store2)
       | _             -> failwith "type error"
 
     | PrintLn e ->
-      let (str, store') = evalString e env store
+      // TODO: assert typeOf e == StringT
+      let (str, _) = evalString e env store
+
       printfn "%s" str
-      (None, store')
+      (None, store)
 
     | Return e ->
       let (res, store') = exp e env store
@@ -247,19 +279,24 @@ and addContent cnt name env store =
 and dec d env store =
     debug <| sprintf "Declaration: %A" d
     match d with
-    | ArrayDec(name, lengthExp, initialExp) ->
+    | ArrayDec(TypedId (ty, name), lengthExp, initialExp) ->
       let (length, store') = evalInt lengthExp env store
       let (initial, store'') = exp initialExp env store'
+
+      assertType store'' initial ty
+
       let arr = ArrayCnt <| List.replicate length initial
       addContent arr name env store''
 
-    | ProcDec(isRec, name, args, body) ->
+    | ProcDec(ty, isRec, name, args, body) ->
       let fn = Proc (name, isRec, args, env, body)
       addContent fn name env store
 
-    | VarDec(s,e) ->
-      match exp e env store with
-      | (IntVal _ as res, store1)
-      | (BoolVal _ as res, store1)
-      | (StringVal _ as res, store1) -> addContent (SimpVal res) s env store
+    | VarDec(TypedId (ty, name),e) ->
+      let (v, store') = exp e env store
+      assertType store' v ty
+      match v with
+      | IntVal _
+      | BoolVal _
+      | StringVal _ as res -> addContent (SimpVal res) name env store'
       | _ -> failwith "error"

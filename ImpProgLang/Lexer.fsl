@@ -24,6 +24,11 @@ let keyword s =
     | "then"      -> THEN
     | "else"      -> ELSE
     | "fi"        -> FI
+
+    | "int"       -> INT_T
+    | "bool"      -> BOOL_T
+    | "string"    -> STRING_T
+
     | "true"      -> BOOL(true)
     | "false"     -> BOOL(false)
     | _           -> NAME s
@@ -60,6 +65,7 @@ rule tokenize =
   | ","         { COMMA }
   | ":="        { ASG }
   | "."         { DOT }
+  | "~"         { TILDE }
   | operator    { BINOP(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
   | identifier  { keyword(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
   | eof         { EOF }
