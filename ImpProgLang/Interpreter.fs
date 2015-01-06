@@ -131,12 +131,12 @@ and app loc env store args =
   match Map.find loc store with
   | Proc (name,isRec,pArgs,pEnv,pBody) as proc ->
     // lookup and add args to current store
-    let f = fun env' (arg, pArg) ->
-      let (value, _) = exp arg env' store
-      Map.add pArg value env'
+    let f = fun (env', s) (arg, pArg) ->
+      let (value, s') = exp arg env' s
+      (Map.add pArg value env', s)
     //printfn "env: %A \npenv: %A" env pEnv
-    let pEnv' = List.fold f (unionMap env pEnv) (List.zip args pArgs)
-    let (store', pEnv'') = (store, pEnv')
+    let (pEnv', store') = List.fold f (unionMap env pEnv, store) (List.zip args pArgs)
+    let (pEnv'', store'') = (pEnv', store')
       // TODO: do we get the ref from union with calling environment?
       // if not isRec
       // then (store, pEnv')
