@@ -35,6 +35,9 @@ let toString = let f vs =  match vs with
                            | [IntVal v] -> StringVal(string v)
                            | [BoolVal v] -> StringVal(string v)
                            | [StringVal v] -> StringVal v
+                           | [Reference loc] -> StringVal (sprintf "Ref (loc %A)" loc)
+                           | [ArrayVal vals] ->
+                             StringVal <| string (List.map (sprintf "%A") vals)
                            | _          -> failwith "error"
                Primitive f;;
 

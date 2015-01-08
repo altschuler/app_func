@@ -5,7 +5,6 @@ proc ~int[] randomArray(~int ran, ~int len)
     in
         while !i < a.length do
             a[!i] := randomInt(!ran);
-            print toString(a[!i]);
             i     := !i + 1
         od;
         return a

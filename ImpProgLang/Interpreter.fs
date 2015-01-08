@@ -63,12 +63,13 @@ let rec exp e (env:Env) (store:Store) =
 
     | ContOf er ->
       match exp er env store with
-      | (Reference loc,store1) ->
+      | (Reference loc, store1) ->
+        printfn "CONTOF: %A\n%A" er loc
         match Map.find loc store1 with
-        | SimpVal res   -> (res,store1)
-        | ArrayCnt vals -> (ArrayVal vals,store1)
+        | SimpVal res   -> (res, store1)
+        | ArrayCnt vals -> (ArrayVal vals, store1)
         | _             -> failwith "error2"
-      | _ -> failwith "error1"
+      | _ -> failwith "cannot take content of a non-reference"
 
     | Apply(f,es) ->
       debug <| sprintf "Application exp: %A" f
@@ -90,7 +91,7 @@ let rec exp e (env:Env) (store:Store) =
           let valType = typeOf v store'
           let typeValid t = typeOf t store' = valType
           if not (List.forall typeValid vs)
-          then failwith "type of array elements differ"
+            then failwith "type of array elements differ"
 
       (ArrayVal vals, store')
 
@@ -255,8 +256,14 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
         | ArrayVal vals -> ArrayCnt vals
         | v -> SimpVal v
 
-      match varLoc with
-      | Reference loc -> (None, Map.add loc cnt store2)
+      match (value, varLoc) with
+      | (Reference loc, Reference loc2) ->
+          let newVal = Map.find loc store2
+          let v = Map.add loc2 newVal (Map.remove loc store2)
+          (None, v)
+      | (_, Reference loc) ->
+        let v = Map.add loc cnt (Map.remove loc store2)
+        (None, v)
       | _             -> failwith "type error"
 
     | PrintLn e ->

@@ -1,47 +1,19 @@
 let
-    proc ~int[] randomArray(~int ran, ~int len)
-        let
-            int a[!len] : 0;
-            int i       : 0
-        in
-            while !i < a.length do
-                a[!i] := randomInt(!ran);
-                print toString(a[!i]);
-                i     := !i + 1
-            od;
-            return a
-        end;
-
-    proc void printArray(~int[] a)
-        let
-            int i: 0
-        in
-            while !i < a.length do
-                print toString(a[!i]);
-                i := !i + 1
-            od
-        end;
-
-    proc int sumArray(~int[] a)
-        let
-            int sum: 0;
-            int i: 0
-        in
-            while !i < a.length do
-                sum := !sum + a[!i];
-                i   := !i + 1
-            od;
-            return !sum
-        end;
+    decls "program/ArrayUtil";
 
     int rng     : 100;
     int len     : 10;
-    int a[!len] : 1;
+    int a[5]    : 1;
     int sum     : 0
 in
     a := randomArray(rng, len);
-    call printArray(!a);
-    sum := sumArray(!a);
-    print "Sum:";
-    print toString(!sum)
+    print toString(a);
+    print toString(!a)
+    //print toString(!!a)
+    // print toString(!a);
+    // print toString(!!a)
+    //call printArray(a)
+    // sum := sumArray(!a);
+    // print "Sum:";
+    // print toString(!sum)
 end
