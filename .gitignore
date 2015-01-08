@@ -6,9 +6,18 @@
 *.xml
 *.exe
 *.zip
+
+# latex
+auto
+*.aux
+*.log
+*.out
+*.pdf
+*.toc
+
+README.txt
 Debug/
-/ImpProgLang/README.txt
-/WhileInterpreter/README.txt
+
 /ImpProgLang/Parser.fs
 /ImpProgLang/Parser.fsi
 /ImpProgLang/Lexer.fs
