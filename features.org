@@ -1,0 +1,16 @@
+Required
+* rec proc
+* array decl
+* conditionals
+* return (can exit early)
+
+Additional
+* comments
+* infix ops
+* array literal
+* decls import
+* static type system
+** ref types
+** array types
+** as a result:
+   we can do call by value AND call by ref (using ~ and !)
