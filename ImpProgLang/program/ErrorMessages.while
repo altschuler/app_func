@@ -1,0 +1,6 @@
+let
+    int an_int: 1;
+in
+    an_int := 0 // ok
+    //;an_int := "hej" // will fail
+end

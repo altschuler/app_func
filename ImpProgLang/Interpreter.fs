@@ -117,7 +117,7 @@ let rec exp e (env:Env) (store:Store) =
 and findCnt loc store =
   match Map.tryFind loc store with
   | Some a -> a
-  | _ -> failwith "undefined location"
+  | _ -> failwith "unoccupied location"
 
 and findArray e env store =
   let (loc, store') = evalLoc e env store
@@ -240,9 +240,10 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
 
       (None, store5)
 
-    | Asg(name,e) ->
+    | Asg(name, e) ->
       let (value, store1) = exp e env store
-      let (varLoc, store2) = exp name env store1
+      let (varRef, store2) = exp name env store1
+
       // array literals needs to be wrapped in ArrayCnt, everything
       // else in SimpVal
       let cnt =
@@ -250,13 +251,22 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
         | ArrayVal vals -> ArrayCnt vals
         | v -> SimpVal v
 
-      match (value, varLoc) with
+      match (value, varRef) with
       | (Reference loc, Reference loc2) ->
+
           let newVal = Map.find loc store2
+
+          assertType store2 varRef (typeOf value store2)
+
           let v = Map.add loc2 newVal (Map.remove loc store2)
           (None, v)
       | (_, Reference loc) ->
         let v = Map.add loc cnt (Map.remove loc store2)
+        let existingValue = Map.find loc store2
+        let existingType = typeOfContent existingValue store2
+
+        assertType store2 value existingType
+
         (None, v)
       | _             -> failwith "type error"
 

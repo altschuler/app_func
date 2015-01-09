@@ -66,6 +66,8 @@ let files = [
   "ArrayProg2.while";
   "ArrayProg2-v2.while";
 
+  "ErrorMessages.while";
+  "ArrayLiteral.while";
   "ClosureScope.while";
   ];;
 
