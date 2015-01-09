@@ -89,19 +89,9 @@ rule tokenize =
 
 \subsection{Infix ops}
 \subsection{Array literal}
-Array literals are expressions of the form {\tt [1, 2, 3]} or {\tt ["foo", "bar"]}, and can be thought of as array constants. The semantics of the array declaration are unchanged, so the following will result in a two-dimensional array
-\begin{fs}
-let int arr[3] : [1, 2, 3] in ...
-\end{fs}
+Array literals are expressions of the form {\tt [exp1, exp2, ..., exp3]}, and are essentially array constants. The semantics of the array declaration are unchanged, so {\tt let int arr[3] : [1, 2, 3] in ...} would result in a two-dimensional array
 
-A new {\tt Value} constructor has been added:
-\begin{fs}
-type Value    = | IntVal of int
-                ...
-                | ArrayVal of List<Value>
-\end{fs}
-
-Since arrays are not {\tt SimplVal}s, we must wrap them in {\tt ArrayCnt}s and add them to the store when they are being assigned to a variable.
+A new {\tt Value} constructor has been added, namely {\tt ArrayVal List<Exp>}. Since arrays are not {\tt SimplVal}s, we must wrap them in {\tt ArrayCnt}s and add them to the store when they are being assigned to a variable.
 
 Empty arrays are not supported because type unification is not implemented, hence we can not type check an array without elements (see \ref{sec:type} about the type system).
 
@@ -120,7 +110,8 @@ The above exposes all declarations defined in the {\tt program/ArrayUtil.while} 
 
 
 \section{Reflections}
-underligt med {\tt let}
+We find the {\tt let ... in ...} notation somewhat strange considering that {\tt While} is an imperative language.
+
 
 
 \end{document}
