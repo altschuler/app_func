@@ -156,7 +156,8 @@ AST and builds up a type environment. It can then verify if each
 variable's type aligns with the context in which it is used.
 
 We use the function {\tt typeOf} and {\tt typeOfContent} to get the
-actual type of an expression and content node.
+actual type of an expression and content node and {\tt assertType} to
+verify that they match.
 
 \section{Reflections}
 We find the {\tt let/in} notation somewhat strange considering that {\tt While} is an imperative language. Usually {\tt let/in} is an {\textit expression} but here it is simply used to declare variables and procedures, which could as well have been done using the assignment operator or similar in a C-like block.
