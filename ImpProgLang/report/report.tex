@@ -125,7 +125,6 @@ rules to the parser:
 %nonassoc CONTOF
 \end{fs}
 
-
 \subsection{Array literal}
 Array literals are expressions of the form {\tt [exp1, exp2, ..., exp3]}, and are essentially array constants. The semantics of the array declaration are unchanged, so {\tt let int arr[3] : [1, 2, 3] in ...} would result in a two-dimensional array
 
@@ -134,17 +133,21 @@ A new {\tt Value} constructor has been added, namely {\tt ArrayVal List<Exp>}. S
 Empty arrays are not supported because type unification is not implemented, hence we can not type check an array without elements (see \ref{sec:type} about the type system).
 
 \subsection{Declarations-file loading}
-
 To ease loading declarations from a separate file (specifically {\tt ArrayUtils.while}) and to avoid the need to ``hardcode'' an import of the file, we have added a {\tt decls} keyword. It requires a filename, and will load the given file, containing a list of declarations, into the environment and store.
 
 \begin{fs}
 let decls "program/ArrayUtil"; in ...
 \end{fs}
 
-The above exposes all declarations defined in the {\tt program/ArrayUtil.while} file (relative to the cwd, not the file being intepreted) in the statement block of the {\tt let ... in ...} block.
+The above exposes all declarations defined in the {\tt program/ArrayUtil.while} file (relative to the cwd, not the file being interpreted) in the statement block of the {\tt let ... in ...} block.
 
 \subsection{Static type system}
 \label{sec:type}
+A static type system lets the programmer annotate the type of each
+variable, enabling the compiler to catch type errors when assigning
+something to a variable with a different type.
+
+We have added the simple types {\tt Int}, {\tt Bool} and {\tt String}.
 
 
 \section{Reflections}
