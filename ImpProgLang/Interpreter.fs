@@ -34,7 +34,7 @@ type Store  = Map<Location,Content>
 // Utilities
 /////////////////////////////////
 
-let DO_DEBUG = true
+let DO_DEBUG = false
 
 let debug s = if DO_DEBUG then printfn "%s" s
 
@@ -64,7 +64,6 @@ let rec exp e (env:Env) (store:Store) =
     | ContOf er ->
       match exp er env store with
       | (Reference loc, store1) ->
-        printfn "CONTOF: %A\n%A" er loc
         match Map.find loc store1 with
         | SimpVal res   -> (res, store1)
         | ArrayCnt vals -> (ArrayVal vals, store1)
@@ -186,23 +185,18 @@ and app loc env store args =
   match Map.find loc store with
   | Proc (ty, name, isRec, pArgs, pEnv, pBody) as proc ->
     // lookup and add args to current store
-    let f = fun (env', s) (arg, TypedId (pArgTy, pArg)) ->
-      let (value, s') = exp arg env' s
-
+    let f env' (arg, TypedId (pArgTy, pArg)) =
+      let (value, _) = exp arg env store
       assertType store value pArgTy
+      Map.add pArg value env'
 
-      (Map.add pArg value env', s)
+    let pEnv' = List.fold f pEnv (List.zip args pArgs)
 
-    let (pEnv', store') = List.fold f (unionMap env pEnv, store) (List.zip args pArgs)
-    let (pEnv'', store'') = (pEnv', store')
-      // TODO: do we get the ref from union with calling environment?
-      // if not isRec
-      // then (store, pEnv')
-      // else
-      //   let loc' = nextLoc()
-      //   let s' = Map.add loc proc store
-      //   let e' = Map.add name (Reference loc) pEnv'
-      //   (s', e')
+    // add func to its own env if it's declared rec
+    let (pEnv'', store') =
+      if not isRec
+      then (pEnv', store)
+      else addContent proc name pEnv' store
 
     // exec body statement in new env
     let (res, store2) = stm pBody pEnv'' store'

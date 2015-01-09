@@ -1,10 +1,14 @@
-let x: 4; output: 1;
-    rec proc fac(n,o) if <>(!n,0)
-                      then o := *(!n,!o); 
-					       n := -(!n,1);
-                           call fac(n,o)
-                      fi    
-in call fac(x, output);
-   print toString(!x);
-   print toString(!output) 
+let
+    int x: 4;
+    int output: 1;
+    rec proc int fac(~int n, ~int o)
+         if !n <> 0 then
+             o := !n * !o;
+             n := !n - 1;
+             call fac(n,o)
+         fi
+in
+    call fac(x, output);
+    print toString(!x);
+    print toString(!output)
 end

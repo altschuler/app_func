@@ -8,12 +8,9 @@ let
 in
     a := randomArray(rng, len);
     print toString(a);
-    print toString(!a)
-    //print toString(!!a)
-    // print toString(!a);
-    // print toString(!!a)
-    //call printArray(a)
-    // sum := sumArray(!a);
-    // print "Sum:";
-    // print toString(!sum)
+    print toString(!a);
+    call printArray(a);
+    sum := sumArray(a);
+    print "Sum:";
+    print toString(!sum)
 end
