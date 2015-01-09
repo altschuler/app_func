@@ -65,6 +65,8 @@ let files = [
   "ArrayProg1.while";
   "ArrayProg2.while";
   "ArrayProg2-v2.while";
-  ]
 
-List.map runFile files
+  "ClosureScope.while";
+  ];;
+
+List.map runFile files;;

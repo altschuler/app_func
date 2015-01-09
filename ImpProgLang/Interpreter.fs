@@ -57,9 +57,9 @@ let rec exp e (env:Env) (store:Store) =
     match e with
     | Var v ->
       debug <| sprintf "Var: %A" (Map.find v env)
-      match Map.find v env with // TODO: tryFind
-      | Reference loc as refl -> (refl,store)
-      | _                     -> failwith "value must be a reference"
+      match Map.tryFind v env with
+      | Some value -> (value, store)
+      | None -> failwith (sprintf "undefined variable: %s" v)
 
     | ContOf er ->
       match exp er env store with
@@ -222,7 +222,7 @@ and stm st (env:Env) (store:Store) : option<Value> * Store =
       | Reference loc -> app loc env store args
       | _ -> failwith " is undefined"
 
-    | Call(_) -> failwith " invalid CALL syntax" // this should be unreachable
+    | Call(_) -> failwith " invalid CALL syntax" // unreachable
 
     | ArrayAsg(idExp, indexExp, value) ->
       let (index, store1) = evalInt indexExp env store
