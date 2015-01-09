@@ -29,7 +29,7 @@
 % constants
 \newcommand{\COURSE}{02257 Applied Functional Programming}
 \newcommand{\TITLE}{Project 1}
-\newcommand{\DATE}{9.1.2015}
+\newcommand{\DATE}{January 9, 2015}
 
 
 \input{macros.tex}
@@ -46,16 +46,55 @@
 \cfoot{Page \thepage{} of~\pageref{LastPage}}
 
 
-\title{\TITLE}
+\title{\TITLE\\ {\large \COURSE}}
 \date{\DATE}
 \author{
   Markus Færevaag {\tt s123692}\\
-  Simon Altshuler {\tt s123563}
+  Simon Altschuler {\tt s123563}
 }
+
 
 \begin{document}
 \maketitle
+\vspace{10cm}
+\doublesignature{Markus Færevaag}{Simon Altschuler} \\
+\clearpage
 
-LOOL
+
+\section{Introduction}
+In this report we will describe what language features we have
+implemented in the While language, including the required and some
+additional. We will end by giving some reflections on the
+project.
+
+
+\section{Features}
+We have made all the mandatory language features, such as procedures,
+recursive procedures, arrays and conditionals. This means we can run
+all the given {\tt .while} programs, which can be tested by running
+the {\tt Script.fsx} file, or alternatively, running {\tt make}.
+
+The additional language features we have implemented will be described
+in the following subsections.
+
+\subsection{Comments}
+We have added comments by simply adding a tokenization rule in the
+lexer:
+\begin{verbatim}
+rule tokenize =
+  parse
+  | ...
+  | "//" [^ '\n']* '\n' { lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf }
+\end{verbatim}
+
+\subsection{Infix ops}
+\subsection{Array literal}
+\subsection{Decls import}
+\subsection{Static type system}
+
+
+\section{Reflections}
+underligt med {\tt let}
+
 
 \end{document}
