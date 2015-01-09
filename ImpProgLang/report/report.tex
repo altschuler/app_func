@@ -105,7 +105,16 @@ Since arrays are not {\tt SimplVal}s, we must wrap them in {\tt ArrayCnt}s and a
 
 Empty arrays are not supported because type unification is not implemented, hence we can not type check an array without elements (see \ref{sec:type} about the type system).
 
-\subsection{Decls import}
+\subsection{Declarations-file loading}
+
+To ease loading declarations from a separate file (specifically {\tt ArrayUtils.while}) and to avoid the need to ``hardcode'' an import of the file, we have added a {\tt decls} keyword. It requires a filename, and will load the given file, containing a list of declarations, into the environment and store.
+
+\begin{fs}
+let decls "program/ArrayUtil"; in ...
+\end{fs}
+
+The above exposes all declarations defined in the {\tt program/ArrayUtil.while} file (relative to the cwd, not the file being intepreted) in the statement block of the {\tt let ... in ...} block.
+
 \subsection{Static type system}
 \label{sec:type}
 
