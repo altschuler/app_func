@@ -80,14 +80,52 @@ in the following subsections.
 \subsection{Comments}
 We have added comments by simply adding a tokenization rule in the
 lexer:
-\begin{verbatim}
+\begin{fs}
 rule tokenize =
   parse
   | ...
   | "//" [^ '\n']* '\n' { lexbuf.EndPos <- lexbuf.EndPos.NextLine; tokenize lexbuf }
-\end{verbatim}
+\end{fs}
+The lexer will therefore ignore everything after ``{\tt //}'', on the same line.
 
-\subsection{Infix ops}
+\subsection{Infix operators}
+Originally the While language only supported operators with prefix
+notation, as {\tt +(1, 1)}. We have added support for infix notation,
+which means one can use the standard notation {\tt 1 + 1}. This works
+for all common binary operators as $+$, $-$, $*$, $/$, $=$, $<$,
+$>$ and $< >$.
+
+First we added a tokenization rule for binary operators:
+\begin{fs}
+let operator  = ('<' | '>' | '*' | '-' | '+' | '=' | '/')+
+
+rule tokenize =
+  parse
+  | ...
+  | operator    { BINOP(Encoding.UTF8.GetString(lexbuf.Lexeme)) }
+\end{fs}
+
+Where {\tt BINOP} is defined in the parser as:
+\begin{fs}
+%token <string> BINOP
+
+Exp:
+  | ...
+  | Exp BINOP Exp                        { Apply($2, [$1; $3]) }
+\end{fs}
+Here binary operators are simply to applied to the two given
+arguments, making it equivalent to its prefix alternative.
+
+To maintain correct precedence we had to make the dereference operator
+``{\tt !}''  non-associative, and all the binary operators
+left-associative. This was done by adding the following association
+rules to the parser:
+\begin{fs}
+%left BINOP
+%nonassoc CONTOF
+\end{fs}
+
+
 \subsection{Array literal}
 Array literals are expressions of the form {\tt [exp1, exp2, ..., exp3]}, and are essentially array constants. The semantics of the array declaration are unchanged, so {\tt let int arr[3] : [1, 2, 3] in ...} would result in a two-dimensional array
 
