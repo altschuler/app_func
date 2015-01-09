@@ -45,73 +45,26 @@ let initEnv = Map.ofList [("+",plusInt); ("-",minusInt); ("*",multInt);
                           ("=",eqInt); ("<>",neqInt); ("<=",lessEqInt); ("<",lessInt);
                           ("randomInt", randomInt); ("toString",toString)  ];;
 
-// Parsing strings
-let s1 = parseStm "while <>(!n,0)
-                   do y := *(!n,!y);
-                      n := -(!n,1)
-                   od";;
-
-let s2 = parseStm "let n: 4; y: 1
-                   in while <>(!n,0)
-                      do y := *(!n,!y);
-                         n := -(!n,1)
-                      od
-                   end";;
-
 // Parsing from files
 // Set current directory
 System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__;;
 
-
-let p3 = parseFromFile <| filePath "Factorial1.while";;
-// Interpret the statement
-let _ = ignore (stm p3 initEnv Map.empty);;
-
-let p4 = parseFromFile <| filePath "Factorial2.while";;
-let _ = ignore (stm p4 initEnv Map.empty);;
-
-let p5 = parseFromFile <| filePath "Factorial3.while";;
-let _ = ignore (stm p5 initEnv Map.empty);;
-
-// let p6 = parseFromFile <| filePath "Factorial4.while";;
-// let _ = ignore (stm p6 initEnv Map.empty);;
-
-// let p7 = parseFromFile <| filePath "Factorial5.while";;
-// let _ = ignore (stm p7 initEnv Map.empty);;
+let runFile file =
+  printfn "\n*** Running file: %s ***" file
+  let p = parseFromFile <| filePath file
+  ignore (stm p initEnv Map.empty);;
 
 
-// let p8 = parseFromFile "ClosureScope.while";;
-// let _ = ignore (stm p8 initEnv Map.empty);;
+let files = [
+  "Factorial1.while";
+  "Factorial2.while";
+  "Factorial3.while";
+  "Factorial4.while";
+  "Factorial5.while";
 
+  "ArrayProg1.while";
+  "ArrayProg2.while";
+  "ArrayProg2-v2.while";
+  ]
 
-// let p9 = parseFromFile "ArrayProg1.while";;
-// let _ = ignore (stm p9 initEnv Map.empty);;
-
-let p10 = parseFromFile <| filePath "ArrayProg2.while";;
-let _ = ignore (stm p10 initEnv Map.empty);;
-
-
-// Parsing and interpreting programs with arrays
-(*
-let randomArray = parseDec "proc randomArray(rng, lng)
-                               let a[!lng]: 0;
-                                   i: 0
-                               in while <(!i,a.length)
-                               do a[!i] := randomInt(rng);
-                                  i    := +(!i,1)
-                               od;
-                               return a
-                               end";;
-*)
-
-// Auxiliary procedures on arrays are in the file "ArrayUtil.while"
-// They are used to built up a basic environment and a basic store
-//let arrayUtilDecs = parseDecListFromFile <| filePath "ArrayUtil.while";;
-
-//let (basisEnv, basisStore) = decList arrayUtilDecs initEnv Map.empty;;
-
-//let ap1 = parseFromFile  <| filePath "ArrayProg1.while";;
-//let _ = ignore (stm ap1 basisEnv basisStore);;
-
-//let ap2 = parseFromFile  <| filePath "ArrayProg2.while";;
-//let _ = ignore (stm ap2 basisEnv basisStore);;
+List.map runFile files
