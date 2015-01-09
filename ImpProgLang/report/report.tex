@@ -141,14 +141,22 @@ let decls "program/ArrayUtil"; in ...
 
 The above exposes all declarations defined in the {\tt program/ArrayUtil.while} file (relative to the cwd, not the file being interpreted) in the statement block of the {\tt let ... in ...} block.
 
-\subsection{Static type system}
+\subsection{Type system}
 \label{sec:type}
-A static type system lets the programmer annotate the type of each
-variable, enabling the compiler to catch type errors when assigning
+A type system lets the programmer annotate the type of each variable,
+enabling the intepreter to catch type errors such as assigning
 something to a variable with a different type.
 
-We have added the simple types {\tt Int}, {\tt Bool} and {\tt String}.
+We have added the simple types {\tt Int}, {\tt Bool} and {\tt String}
+and compound types {\tt Ref <type>} and {\tt Array <type>}. The
+intepreter checks the type of each expression during assignment and
+procedure application. Currently it happens during intepretation, but
+could be made static by introducing a new module that traverses the
+AST and builds up a type environment. It can then verify if each
+variable's type aligns with the context in which it is used.
 
+We use the function {\tt typeOf} and {\tt typeOfContent} to get the
+actual type of an expression and content node.
 
 \section{Reflections}
 We find the {\tt let/in} notation somewhat strange considering that {\tt While} is an imperative language. Usually {\tt let/in} is an {\textit expression} but here it is simply used to declare variables and procedures, which could as well have been done using the assignment operator or similar in a C-like block.
