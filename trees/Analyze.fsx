@@ -28,7 +28,7 @@ let generateProgram size =
   sprintf "let int foo : 1%s in print \"x\"%s end" decls stms
 
 let time size =
-  let designed = (design << transform << parseString << generateProgram) size
+  let designed = (design << transform << parseString << generateProgram) (size * size)
   let stopwatch = Stopwatch.StartNew()
   ignore (drawTree designed)
   stopwatch.Stop()
@@ -37,5 +37,7 @@ let time size =
 // run once to load all modules
 ignore (time 1)
 
-let analyze = List.zip [1 .. 100] (List.map time [1 .. 100])
+let analyze =
+  let sizes = [1 .. 20]
+  List.zip sizes (List.map time sizes)
 printfn "%A" analyze

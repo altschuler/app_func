@@ -5,8 +5,8 @@
 #load "Lexer.fs"
 #load "ParserUtil.fs"
 #load "TreeDesign.fs"
-//#load "TreeDraw.fs"
-#load "TreeDrawBuilder.fs"
+#load "TreeDraw.fs"
+//#load "TreeDrawBuilder.fs"
 #load "TransformAST.fs"
 
 open AST
@@ -20,4 +20,5 @@ open System.IO
 let ast2ps = drawTree << design << transform
 let file2ps = ast2ps << parseString << File.ReadAllText
 
-File.WriteAllText("tree.ps", file2ps "program/ArrayProg2.while")
+File.WriteAllText("tree.ps", file2ps "program/Factorial1.while")
+//File.WriteAllText("tree.ps", file2ps "program/ArrayProg2.while")

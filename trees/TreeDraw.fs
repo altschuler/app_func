@@ -36,21 +36,19 @@ let drawCurve (x1, y1) (x2, y2) =
 
 let makeConfig (tw, th) ps =
   sprintf "%%!
-           /PageSize [ %d %d ]
+           /Times-Roman findfont 10 scalefont setfont
            1 1 scale
            %d %d translate
 
-           /Times-Roman findfont 10 scalefont setfont
-
            %s
-           showpage" tw 2000 tw th ps
+           showpage" (tw / 2) th ps
 
 let dimensions tree extent =
   let f (ml, mr) (l, r) = (min ml l, max mr r)
   let maxExt = List.fold f (0.0, 0.0) extent
   let w = (snd maxExt) - (fst maxExt)
   let h = List.length extent
-  let (sw, sh) = (30.0, 45)
+  let (sw, sh) = (20.0, 45)
   (int (w * sw), sh * List.length extent)
 
 let drawTree (tree, extent) =

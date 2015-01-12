@@ -1,0 +1,9 @@
+let
+    int n: 4;
+    int y: 1
+in
+    while !n <> 0 do
+       y := !n * !y;
+       n := !n - 1
+    od
+end
