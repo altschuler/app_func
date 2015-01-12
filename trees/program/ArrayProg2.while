@@ -1,0 +1,16 @@
+let
+    decls "program/ArrayUtil";
+
+    int rng     : 100;
+    int len     : 10;
+    int a[5]    : 1;
+    int sum     : 0
+in
+    a := randomArray(rng, len);
+    print toString(a);
+    print toString(!a);
+    call printArray(a);
+    sum := sumArray(a);
+    print "Sum:";
+    print toString(!sum)
+end
