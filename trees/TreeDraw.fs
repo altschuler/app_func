@@ -8,22 +8,19 @@ type PostScript = string
 
 let catString s1 s2 = sprintf "%s\n%s" s1 s2
 
-let drawLabel s (x, y) label =
-  let cmd = sprintf "/Times-Roman findfont
-                     12 scalefont
-                     setfont
-                     newpath
-                     %d %d moveto
-                     (%s) show" (int x) (int y) label
-  catString s cmd
+let drawLabel (x, y) label =
+  sprintf "/Times-Roman findfont
+           12 scalefont
+           setfont
+           newpath
+           %d %d moveto
+           (%s) dup stringwidth pop 2 div neg 0 rmoveto show" (int x) (int y) label
 
-let drawLine s (x1, y1) (x2, y2) =
-  let cmd = sprintf "newpath
-                     %d %d moveto
-                     %d %d lineto
-                     stroke" (int x1) (int y1) (int x2) (int y2)
-  catString s cmd
-
+let drawLine (x1, y1) (x2, y2) =
+  sprintf "newpath
+           %d %d moveto
+           %d %d lineto
+           stroke" (int x1) (int y1) (int x2) (int y2)
 
 let makeConfig ps =
   sprintf "%%!
@@ -31,18 +28,22 @@ let makeConfig ps =
            %s
            showpage" ps
 
-let drawNode x y label = drawLabel x y label
-
 let drawTree tree =
   let scale = 50.0
 
-  let rec drawTree' s (ox, oy) depth (Node((label, x), subtrees)) =
+  let rec drawTree' (ox, oy) depth (Node((label, x), subtrees)) =
     let (px, py) as nodePos = ((ox + x) * scale, (depth + oy) * scale)
-    let s' = drawLabel s nodePos label
-    List.fold (fun str (Node((label, x'), subtrees) as n) ->
-               let s1 = drawTree' str (ox + x, oy) (depth + 1.0) n
-               let childPos = ((ox + x + x') * scale, (depth + oy + 1.0) * scale)
-               drawLine s1 (px, py) childPos
-               ) s' subtrees
 
-  drawTree' "" (5.0, 1.0) 0.0 tree
+    let nodeString = drawLabel nodePos label
+
+    let f str (Node((label, x'), subtrees) as n) =
+      let childString = drawTree' (ox + x, oy) (depth + 1.0) n
+      let childPos = ((ox + x + x') * scale, (depth + oy + 1.0) * scale)
+      let lineString = drawLine (px, py) childPos
+      catString str (catString childString lineString)
+
+    let childrenString = List.fold f "" subtrees
+
+    catString childrenString nodeString
+
+  drawTree' (5.0, 1.0) 0.0 tree
