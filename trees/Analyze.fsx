@@ -6,6 +6,7 @@
 #load "ParserUtil.fs"
 #load "TreeDesign.fs"
 #load "TreeDraw.fs"
+//#load "TreeDrawBuilder.fs"
 #load "TransformAST.fs"
 
 open AST
@@ -27,12 +28,11 @@ let generateProgram size =
   sprintf "let int foo : 1%s in print \"x\"%s end" decls stms
 
 let time size =
-  let ast = parseString <| generateProgram size
+  let designed = (design << transform << parseString << generateProgram) size
   let stopwatch = Stopwatch.StartNew()
-  ignore (ast2ps ast)
+  ignore (drawTree designed)
   stopwatch.Stop()
-  let ms = stopwatch.Elapsed.TotalMilliseconds
-  ms
+  stopwatch.Elapsed.TotalMilliseconds
 
 // run once to load all modules
 ignore (time 1)

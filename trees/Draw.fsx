@@ -5,7 +5,8 @@
 #load "Lexer.fs"
 #load "ParserUtil.fs"
 #load "TreeDesign.fs"
-#load "TreeDraw.fs"
+//#load "TreeDraw.fs"
+#load "TreeDrawBuilder.fs"
 #load "TransformAST.fs"
 
 open AST
