@@ -22,11 +22,10 @@ let drawLine (x1, y1) (x2, y2) =
 
 let drawBranch (x1, y1) (x2, y2) =
   let y' = (y1 + y2) / 2.0
-  catString
+  sprintf "%s\n%s\n%s"
     (drawLine (x1, y1) (x1, y'))
-    (catString
-      (drawLine (x1, y') (x2, y'))
-      (drawLine (x2, y') (x2, y2)))
+    (drawLine (x1, y') (x2, y'))
+    (drawLine (x2, y') (x2, y2))
 
 let drawCurve (x1, y1) (x2, y2) =
   let (x1', y1', x2', y2') = (int x1, int y1, int x2, int y2)
@@ -45,7 +44,6 @@ let makeConfig (tw, th) ps =
 
            %s
            showpage" tw 2000 tw th ps
-
 
 let dimensions tree extent =
   let f (ml, mr) (l, r) = (min ml l, max mr r)
