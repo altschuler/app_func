@@ -40,7 +40,7 @@ let makeConfig (tw, th) ps =
            1 1 scale
            %d %d translate
 
-           /Times-Roman findfont 12 scalefont setfont
+           /Times-Roman findfont 10 scalefont setfont
 
            %s
            showpage" tw 2000 tw th ps

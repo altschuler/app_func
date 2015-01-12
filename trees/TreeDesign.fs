@@ -17,35 +17,35 @@ let rec merge rs ls =
 
 let mergelist es = List.fold merge [] es
 
-let rec fit (rs:Extent) (ls:Extent) =
+let rec fit label (rs:Extent) (ls:Extent) =
   match rs, ls with
-  | (_, p) :: ps, (q, _) :: qs -> max (fit ps qs) (p - q + 1.0)
+  | (_, p) :: ps, (q, _) :: qs -> max (fit label ps qs) (p - q + 1.0 + (float (String.length label) * 0.3))
   | _, _ -> 0.0
 
-let fitlistl es =
+let fitlistl label es =
   let rec fitlistl' acc = function
     | [] -> []
     | (e::es) ->
-      let x = fit acc e
+      let x = fit label acc e
       x :: fitlistl' (merge acc (moveextent (e,x))) es
   fitlistl' [] es
 
-let fitlistr es =
+let fitlistr label es =
   let rec fitlistr' acc = function
     | [] -> []
     | (e::es) ->
-      let x = -(fit e acc)
+      let x = -(fit label e acc)
       x :: fitlistr' (merge (moveextent (e,x)) acc) es
   List.rev (fitlistr' [] (List.rev es))
 
 let mean (x, y) = (x + y) / 2.0
 
-let fitlist es = List.map mean (List.zip (fitlistl es) (fitlistr es))
+let fitlist label es = List.map mean (List.zip (fitlistl label es) (fitlistr label es))
 
 let design tree =
   let rec design' (Node(label, subtrees)) =
     let (trees, extents) = List.unzip (List.map design' subtrees)
-    let positions        = fitlist extents
+    let positions        = fitlist label extents
     let ptrees           = List.map movetree (List.zip trees positions)
     let pextents         = List.map moveextent (List.zip extents positions)
     let resultextent     = (0.0, 0.0) :: mergelist pextents
