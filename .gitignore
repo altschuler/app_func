@@ -24,3 +24,4 @@ Debug/
 /ImpProgLang/Parser.fs
 /ImpProgLang/Lexer.fs
 /trees/tree.ps
+/trees/AST.fs
