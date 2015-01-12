@@ -30,16 +30,17 @@ let makeConfig ps =
 
 let drawTree tree =
   let scale = 50.0
+  let nh = 10.0
 
   let rec drawTree' (ox, oy) depth (Node((label, x), subtrees)) =
-    let (px, py) as nodePos = ((ox + x) * scale, (depth + oy) * scale)
+    let (px, py) = ((ox + x) * scale, (depth + oy) * scale)
 
-    let nodeString = drawLabel nodePos label
+    let nodeString = drawLabel (px, py) label
 
     let f str (Node((label, x'), subtrees) as n) =
       let childString = drawTree' (ox + x, oy) (depth + 1.0) n
-      let childPos = ((ox + x + x') * scale, (depth + oy + 1.0) * scale)
-      let lineString = drawLine (px, py) childPos
+      let (cx, ch) = ((ox + x + x') * scale, (depth + oy + 1.0) * scale)
+      let lineString = drawLine (px, py + nh) (cx, ch - 3.0)
       catString str (catString childString lineString)
 
     let childrenString = List.fold f "" subtrees
