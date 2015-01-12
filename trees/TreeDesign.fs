@@ -52,4 +52,4 @@ let design tree =
     let resulttree       = Node((label, 0.0), ptrees)
     (resulttree, resultextent)
 
-  fst (design' tree)
+  design' tree
