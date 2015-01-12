@@ -14,10 +14,26 @@ let drawLabel (x, y) label =
            (%s) dup stringwidth pop 2 div neg 0 rmoveto show" (int x) (int y) label
 
 let drawLine (x1, y1) (x2, y2) =
+  let (x1', y1', x2', y2') = (int x1, int y1, int x2, int y2)
   sprintf "newpath
            %d %d moveto
            %d %d lineto
-           stroke" (int x1) (int y1) (int x2) (int y2)
+           stroke" x1' y1' x2' y2'
+
+let drawBranch (x1, y1) (x2, y2) =
+  let y' = (y1 + y2) / 2.0
+  catString
+    (drawLine (x1, y1) (x1, y'))
+    (catString
+      (drawLine (x1, y') (x2, y'))
+      (drawLine (x2, y') (x2, y2)))
+
+let drawCurve (x1, y1) (x2, y2) =
+  let (x1', y1', x2', y2') = (int x1, int y1, int x2, int y2)
+  sprintf "newpath
+           %d %d moveto
+           %d %d %d %d %d %d curveto
+           stroke" x1' y1' x1' y2' x2' y1' x2' y2'
 
 let makeConfig (tw, th) ps =
   sprintf "%%!
@@ -40,9 +56,10 @@ let dimensions tree extent =
   (int (w * sw), sh * List.length extent)
 
 let drawTree (tree, extent) =
-  let scale = 50.0
+  let scale = 40.0
   let nh = 10.0
   let size = dimensions tree extent
+  let lineStyle = drawCurve
 
   let rec drawTree' ox depth (Node((label, x), subtrees)) =
     let (px, py) = ((ox + x) * scale, -depth * scale)
@@ -52,7 +69,7 @@ let drawTree (tree, extent) =
     let f str (Node((label, x'), subtrees) as n) =
       let childString = drawTree' (ox + x) (depth + 1.0) n
       let (cx, ch) = ((ox + x + x') * scale, -(depth + 1.0) * scale)
-      let lineString = drawLine (px, py - 3.0) (cx, ch + nh)
+      let lineString = lineStyle (px, py - 3.0) (cx, ch + nh)
       catString str (catString childString lineString)
 
     let childrenString = List.fold f "" subtrees
