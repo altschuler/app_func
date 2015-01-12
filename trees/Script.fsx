@@ -10,7 +10,8 @@ open System.IO
 let tree =
   Node("A",
     [ Node("B", []);
-      Node("C", //[])]);
+      Node("C", []);
+      Node("D", //[])]);
         [ Node ("D", []);
           Node ("E", []);
           Node ("F",

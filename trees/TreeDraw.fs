@@ -45,4 +45,4 @@ let drawTree tree =
                drawLine s1 (px, py) childPos
                ) s' subtrees
 
-  drawTree' "" (1.0, 1.0) 0.0 tree
+  drawTree' "" (5.0, 1.0) 0.0 tree

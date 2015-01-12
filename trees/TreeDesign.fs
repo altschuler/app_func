@@ -19,8 +19,7 @@ let mergelist es = List.fold merge [] es
 
 let rec fit (rs:Extent) (ls:Extent) =
   match rs, ls with
-  | (_, p) :: ps, (q, _) :: qs ->
-    max (fit ps qs) (p - q + 1.0)
+  | (_, p) :: ps, (q, _) :: qs -> max (fit ps qs) (p - q + 1.0)
   | _, _ -> 0.0
 
 let fitlistl es =
@@ -35,8 +34,8 @@ let fitlistr es =
   let rec fitlistr' acc = function
     | [] -> []
     | (e::es) ->
-      let x = -(fit acc e)
-      x :: fitlistr' (merge acc (moveextent (e,x))) es
+      let x = -(fit e acc)
+      x :: fitlistr' (merge (moveextent (e,x)) acc) es
   List.rev (fitlistr' [] (List.rev es))
 
 let mean (x, y) = (x + y) / 2.0
