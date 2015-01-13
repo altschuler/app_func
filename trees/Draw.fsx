@@ -17,8 +17,6 @@ open TransformAST
 
 open System.IO
 
-let ast2ps = drawTree << design << transform
-let file2ps = ast2ps << parseString << File.ReadAllText
+let file2ps = drawTree << design << transform << parseString << File.ReadAllText
 
 File.WriteAllText("tree.ps", file2ps "program/Factorial1.while")
-//File.WriteAllText("tree.ps", file2ps "program/ArrayProg2.while")
