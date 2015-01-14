@@ -95,6 +95,8 @@ PostScript is a plaintext format which means that it is quite easy to generate. 
 
 \section{Analysis}
 \label{sec:analysis}
+When testing the running time of the program, we first need a program to test. To be able to scale the program, we generate a program dynamically by specifying a number of nodes the resulting AST should contain. We have therefor made the function {\tt generateProgram} in {\tt Analyze.fsx} to do precisely this. Optimally we would have created a binary tree that spans proportionally in depth and width.
+4
 The complexity of the algorithm is $O(n^2)$ where $n$ is the amount AST nodes, but the amortized cost of the program seems close to linear. It is however obvious that the \texttt{StringBuilder} variant is much faster. Figure \ref{fig:plot} visualizes the running times that we recorded on input sizes ranging from 1 node to 400 nodes.
 
 \begin{figure}[H]
