@@ -29,10 +29,10 @@
 % constants
 \newcommand{\COURSE}{02257 Applied Functional Programming}
 \newcommand{\TITLE}{Project 2}
-\newcommand{\DATE}{January 9, 2015}
+\newcommand{\DATE}{January 14, 2015}
 
 
-\input{macros.tex}
+\input{macros}
 
 
 \pagestyle{fancy}
@@ -72,7 +72,7 @@ The generated PostScript document renders the AST in a ``pleasing'' manner, wher
 
 We have implemented two versions of the PostScript generator, one that uses simple \texttt{sprintf} operations and one that utilizes the \texttt{.NET} \texttt{StringBuilder} for performance optimization. We have analyzed the resulting running time of PostScript generation separately and for the full drill of transforming, designing and rendering an AST.
 
-The only issue known to us is the placement of the generated rendering on the page and more importantly the actual size of the page. It is apparently not trivial to set the generated page size in PostScript.
+The only issue known to us is the placement of the generated rendering on the page and more importantly the actual size of the page. It is apparently non trivial to set the generated page size in PostScript, causing large trees to span out of the page.
 
 Following is a very brief description of each task and finally the running time analysis.
 
@@ -82,7 +82,7 @@ Porting the SML code to F\# was fairly straight-forward, with most issues being 
 
 
 \section{Transforming the AST}
-The transformation of the AST to the general \texttt{Tree} data structure was a simple matter of assigning suitable label for each type of node, and recursively parsing their children. There are various ways in which one can choose to represent a node such as \texttt{Apply(name, expressions)}, for instance as a pair, a flattened list containing the name and expressions or having the name in the label of the node. We went for the latter.
+The transformation of the AST to the general \texttt{Tree} data structure was a simple matter of assigning suitable labels for each type of node, and recursively parsing their children. There are various ways in which one can choose to represent a node such as \texttt{Apply(name, expressions)}, for instance as a pair, a flattened list containing the name and expressions or having the name in the label of the node. We went with the latter.
 
 
 \section{Avoiding label overlap}
@@ -107,6 +107,6 @@ The complexity of the algorithm is $O(n^2)$ where $n$ is the amount AST nodes, b
 \section{Running the solution}
 To generate a drawing simply run the \texttt{Draw.fsx} file. By default it will rendering the \texttt{program/Factorial1.while} file, but that can be easily changed for another file. A file called \texttt{tree.ps} will be generated with the final rendering.
 
-For what it's worth; the analysis can be run by running the \texttt{Analyze.fsx} file.
+For what it's worth; the analysis can be run by running the \texttt{Analyze.fsx} script, which loads the appropriate tree builder algorithm (either {\tt TreeDraw.fs} for regular strings or {\tt TreeDrawBuilder.fs} for {\tt StringBuilder}).
 
 \end{document}
