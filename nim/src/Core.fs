@@ -6,17 +6,33 @@ module Core =
 
   type Heap  = Match list
 
-  type Game  = Heap list
-
-  let m = Match ()
 
 
-  let createGame () : Game =
+  type Board() =
+    let mutable heaps = []
+
     let size = 4
 
-    let rec createGame' = function
+    let rec createBoard = function
       | n when n > 0 ->
-          [List.replicate (2 * (size - n) + 1) m] @ createGame' (n - 1)
-      | _            -> []
+        let numMatches = (2 * (size - n) + 1)
+        [List.replicate numMatches (Match ())] @ createBoard (n - 1)
+      | _ -> []
 
-    createGame' size
+    let rec printBoard = function
+      | [] -> printfn ""
+      | h :: hs ->
+        printfn "%A" (List.map (fun h' -> "x") h)
+        printBoard hs
+
+    do heaps <- createBoard size
+
+    member this.Size() = size
+
+    member this.Print() = printBoard heaps
+
+
+  type Game() =
+    do printfn "Good luck!"
+
+    member this.Board() = new Board()

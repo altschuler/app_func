@@ -3,13 +3,12 @@ namespace Nim
 module Main =
 
   open Nim.Core
-  open Nim.Util
 
   [<EntryPoint>]
   let main argv =
 
-    let g = createGame ()
+    let g = new Game()
 
-    printGame g
+    g.Board().Print()
 
     0
