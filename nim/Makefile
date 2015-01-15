@@ -1,7 +1,7 @@
 CC = fsharpc
 MO = mono
 
-SRC = src/Core.fs src/Main.fs
+SRC = src/Utils.fs src/Core.fs src/Main.fs
 EXE = bin/nim.exe
 
 all: run

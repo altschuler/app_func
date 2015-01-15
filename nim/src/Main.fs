@@ -7,8 +7,13 @@ module Main =
   [<EntryPoint>]
   let main argv =
 
-    let g = new Game()
+    let g = newGame ()
 
-    g.Board().Print()
+    printBoard g.Board
+
+    let g' = g.Move 0 1
+    let g'' = g'.Move 3 2
+
+    printBoard g''.Board
 
     0
