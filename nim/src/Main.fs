@@ -13,13 +13,14 @@ module Main =
 
       printBoard g.Board
 
-      let g' = (g.Move 0 1).Move 3 2
+      let g' = g.Move 0 1
+      let g'' = g'.ComputerMove()
 
       printBoard g'.Board
 
       printfn "finished: %b" g'.Finished
 
-      let g'' = ((g'.Move 1 3).Move 2 5).Move 3 5
+      let g'' = ((g'.Move 3 3).Move 2 5)//.Move 3 5
 
       printBoard g''.Board
 

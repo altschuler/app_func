@@ -23,6 +23,8 @@ module Core =
 
   type Game(turn : Player, board : Board) =
 
+    member private this.NimSum = List.reduce (^^^)
+
     member this.Turn = turn
 
     member this.Board = board
@@ -38,6 +40,21 @@ module Core =
 
       new Game(newTurn, (this.Board.Take heap number))
 
+    member this.ComputerMove() : Game =
+      let m = this.NimSum this.Board.Heaps
+      match m with
+        | 0 ->
+          let f (big, idx) heap = (max heap big, idx + 1)
+          let (_, bigIdx) = List.fold f (0, 0) this.Board.Heaps
+          this.Move (bigIdx - 1) 1 // idx is 1-based
+        | _ ->
+          let rec findMove idx = function
+            | h::hs ->
+              let ns = this.NimSum [m; h]
+              if ns < h then (idx, h - ns) else findMove (idx + 1) hs
+            | _ -> failwith "Shit son"
+          let (hi, n) = findMove 0 this.Board.Heaps
+          this.Move hi n
 
   // helpers
 
