@@ -44,9 +44,10 @@ module Core =
     member this.Move ((heap, number) : GameMove) : Game =
       if this.Finished then raiseGameFinished ()
 
-      let newTurn = match turn with
-        | First -> Second
-        | Second -> First
+      let newTurn =
+        match turn with
+          | First -> Second
+          | Second -> First
 
       new Game(newTurn, (this.Board.Take heap number), this.DidTaunt)
 

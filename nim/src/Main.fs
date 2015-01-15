@@ -2,10 +2,12 @@ namespace Nim
 
 module Main =
 
+  open System.Windows.Forms
   open Nim.Core
   open Nim.Utils
   open Nim.Exceptions
   open Nim.Service
+  open Nim.GUI
 
   [<EntryPoint>]
   let main argv =
@@ -37,7 +39,8 @@ module Main =
       ignore <| g5.Move(1, 1)
 
     try
-      fetch "http://www2.compute.dtu.dk/~mire/nim.game" (play)
+      //fetch "http://www2.compute.dtu.dk/~mire/nim.game" (play)
+      Application.Run(window)
 
     with
       | InvalidMove(s)
