@@ -40,7 +40,8 @@ module Main =
       fetch "http://www2.compute.dtu.dk/~mire/nim.game" (play)
 
     with
-      | InvalidMove(s) -> failwith s
-      | GameFinished(s) -> failwith s
+      | InvalidMove(s)
+      | GameFinished(s)
+      | ParseError(s) -> failwith s
 
     0

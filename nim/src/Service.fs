@@ -2,20 +2,21 @@ namespace Nim
 
 module Service =
 
+  open System
   open System.Net
   open Microsoft.FSharp.Control.WebExtensions
+  open Nim.Exceptions
 
   let fetchAsync cb (url:string) =
     async {
       try
-        printfn "fetching %s..." url
         let uri = new System.Uri(url)
         let webClient = new WebClient()
         let! html = webClient.AsyncDownloadString(uri)
-        printfn "got: %s" html
+
         cb html
       with
-        | ex -> printfn "%s" (ex.Message);
+        | :? System.FormatException -> raiseParseError url
     }
 
   let fetch (url : string) cb =
