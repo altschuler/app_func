@@ -22,13 +22,25 @@ module Core =
 
   type Player = First | Second
 
-  type Game(turn : Player, board : Board) =
+  type Game(turn : Player, board : Board, didWarn : bool) =
 
     member private this.NimSum = List.reduce (^^^)
 
     member this.Turn = turn
 
     member this.Board = board
+
+    member this.DidWarn = didWarn
+
+    member this.Warn() =
+      if not didWarn
+        && this.Turn = First
+        && this.NimSum this.Board.Heaps = 0
+      then
+        printfn "U gon die" // TODO: warn with gui
+        new Game(this.Turn, this.Board, true)
+      else
+        this
 
     member this.Finished = (List.sum this.Board.Heaps) = 0
 
@@ -39,7 +51,7 @@ module Core =
         | First -> Second
         | Second -> First
 
-      new Game(newTurn, (this.Board.Take heap number))
+      new Game(newTurn, (this.Board.Take heap number), this.DidWarn)
 
     member this.ComputerMove() : Game =
       let m = this.NimSum this.Board.Heaps
@@ -59,7 +71,7 @@ module Core =
 
   // helpers
 
-  let newGame () : Game = new Game(First, new Board([1; 3; 5; 7]))
+  let newGame () : Game = new Game(First, new Board([1; 3; 5; 7]), false)
 
   let printBoard (b : Board) =
     List.mapi (fun i h ->

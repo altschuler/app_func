@@ -14,7 +14,9 @@ module Main =
       printBoard g.Board
 
       let g' = g.Move (0, 1)
+      g'.Warn()
       let g'' = g'.ComputerMove()
+      g''.Warn()
 
       printBoard g'.Board
 
