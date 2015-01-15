@@ -8,6 +8,7 @@ module Main =
   open System.Drawing
 
   open Nim.GUI
+  open Nim.Exceptions
   open Nim.Core
   open Nim.Service
   open Nim.Utils
@@ -22,7 +23,6 @@ module Main =
           | _, None -> ()
           | 0, _ -> ()
           | _, Some d ->
-              printfn "%A" d
               cont <- None
               d (queue.Dequeue())
 
@@ -110,18 +110,28 @@ module Main =
     }
 
   and play(game) = async {
-    gui.SetStatus "Playing game"
     gui.Render game
-
     gui.Disable [gui.StartButton]
 
-    let! msg = ev.Receive()
+    if game.Finished
+    then
+    gui.SetStatus "Game finished"
+    gui.Disable [gui.MoveButton; gui.CompButton]
+    else
+    gui.SetStatus "Playing game"
 
-    match msg with
-      | MakeMove m   -> return! play (game.Move m)
-      | ComputerMove -> return! play (game.ComputerMove())
-      | Clear        -> return! ready()
-      | _            -> failwith "play: unexpected message"
+    try
+      let! msg = ev.Receive()
+
+      match msg with
+        | MakeMove m   -> return! play (game.Move m)
+        | ComputerMove -> return! play (game.ComputerMove())
+        | Clear        -> return! ready()
+        | _            -> failwith "play: unexpected message"
+    with
+      | InvalidMove(s) ->
+        gui.SetStatus s
+        play game
     }
 
   // Start

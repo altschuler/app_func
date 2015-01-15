@@ -46,7 +46,7 @@ module GUI =
         AutoSize = true,
         Location = Point(25, 150))
 
-    let computerMoveButton =
+    let compButton =
       new Button(
         Location = Point(525, 100),
         MinimumSize = Size(50, 25),
@@ -64,7 +64,7 @@ module GUI =
       // listeners
       startButton.Click.Add (fun _ -> startFn urlBox.Text)
       moveButton.Click.Add (fun _ -> moveFn (0, 1))
-      computerMoveButton.Click.Add (fun _ -> compFn ())
+      compButton.Click.Add (fun _ -> compFn ())
 
       // finish
       window.Controls.Add(status)
@@ -73,7 +73,7 @@ module GUI =
       window.Controls.Add(startButton)
       window.Controls.Add(board)
       window.Controls.Add(moveButton)
-      window.Controls.Add(computerMoveButton)
+      window.Controls.Add(compButton)
 
     // components TODO: remove
     member this.Window = window
@@ -82,6 +82,7 @@ module GUI =
     member this.Status = status
     member this.StartButton = startButton
     member this.MoveButton = moveButton
+    member this.CompButton = compButton
 
     // functions
     member this.Disable bs =
