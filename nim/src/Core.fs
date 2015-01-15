@@ -18,6 +18,7 @@ module Core =
       if (List.nth heaps heap) - number < 0 then raiseInvalidMove heap
       new Board(setNth heaps heap ((List.nth heaps heap) - number))
 
+  type GameMove = int * int
 
   type Player = First | Second
 
@@ -31,7 +32,7 @@ module Core =
 
     member this.Finished = (List.sum this.Board.Heaps) = 0
 
-    member this.Move (heap:int) (number:int) : Game =
+    member this.Move ((heap, number) : GameMove) : Game =
       if this.Finished then raiseGameFinished ()
 
       let newTurn = match turn with
@@ -46,15 +47,15 @@ module Core =
         | 0 ->
           let f (big, idx) heap = (max heap big, idx + 1)
           let (_, bigIdx) = List.fold f (0, 0) this.Board.Heaps
-          this.Move (bigIdx - 1) 1 // idx is 1-based
+          this.Move(bigIdx - 1, 1) // idx is 1-based
         | _ ->
           let rec findMove idx = function
             | h::hs ->
               let ns = this.NimSum [m; h]
               if ns < h then (idx, h - ns) else findMove (idx + 1) hs
-            | _ -> failwith "Shit son"
-          let (hi, n) = findMove 0 this.Board.Heaps
-          this.Move hi n
+            | _ -> failwith "Mathematical!" // theoretically unreachable
+
+          this.Move <| findMove 0 this.Board.Heaps
 
   // helpers
 
