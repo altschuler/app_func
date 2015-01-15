@@ -11,33 +11,36 @@ module Main =
   let main argv =
 
     let play (s:string) =
+      let g = new Game(First, new Board(parseInts s), false)
 
-      let g = new Game(First, new Board(parseInts s))
+      let taunt (g:Game) =
+        let (taunt, g') = g.Taunt()
+        if taunt then printfn "U gon die" // TODO: taunt with gui
+        g'
 
-      printBoard g.Board
+      let g0 = newGame ()
 
-      let g' = g.Move (0, 1)
-      g'.Warn()
-      let g'' = g'.ComputerMove()
-      g''.Warn()
+      printBoard g0.Board
 
-      printBoard g'.Board
+      let g1 = g0.Move (0, 1)
+      let g2 = taunt g1
+      let g3 = g2.ComputerMove()
+      let g4 = taunt g3
 
-      printfn "finished: %b" g'.Finished
+      printBoard g4.Board
 
-      let g'' = g'.Move(3, 3).Move(2, 5)//.Move 3 5
+      printfn "finished: %b" g4.Finished
 
-      printBoard g''.Board
+      let g5 = g4.Move(3, 3).Move(2, 5)//.Move 3 5
 
-      printfn "finished: %b, winner: %A" g''.Finished g''.Turn
-      ignore <| g''.Move(1, 1)
+      printfn "finished: %b, winner: %A" g5.Finished g5.Turn
+      ignore <| g5.Move(1, 1)
 
     try
-
       fetch "http://www2.compute.dtu.dk/~mire/nim.game" (play)
-
-      0
 
     with
       | InvalidMove(s) -> failwith s
       | GameFinished(s) -> failwith s
+
+    0
