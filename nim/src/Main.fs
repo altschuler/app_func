@@ -45,17 +45,21 @@ module Main =
     | Error
     | Cancelled
     | MakeMove of GameMove
+    | ComputerMove
     | LoadGame of string
 
 
   let ev = AsyncEventQueue()
 
-  let gui = GUI ((fun url -> ev.Post (LoadGame url)), (fun move -> ev.Post (MakeMove move)))
+  let gui = GUI (
+    (fun url  -> ev.Post (LoadGame url)),
+    (fun move -> ev.Post (MakeMove move)),
+    (fun _    -> ev.Post ComputerMove))
   let gameLoader = GameLoader()
 
   let rec ready() = async {
     gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
-    gui.Output.Text <- "Hello"
+    gui.SetStatus "Hello"
 
     gui.Disable []
 
@@ -68,7 +72,7 @@ module Main =
     }
 
   and loading(url) = async {
-    gui.Output.Text <- (sprintf "Fetching game from %s..." url)
+    gui.SetStatus (sprintf "Fetching game from %s..." url)
 
     use ts = new CancellationTokenSource()
 
@@ -94,7 +98,7 @@ module Main =
     }
 
   and cancelling() = async {
-    gui.Output.Text <- "Cancelling"
+    gui.SetStatus "Cancelling"
 
     gui.Disable [gui.StartButton]
 
@@ -106,19 +110,18 @@ module Main =
     }
 
   and play(game) = async {
-    gui.Output.Text <- "Playing game"
+    gui.SetStatus "Playing game"
+    gui.Render game
 
     gui.Disable [gui.StartButton]
 
     let! msg = ev.Receive()
 
     match msg with
-      | MakeMove m ->
-        let game' = game.Move m
-        printBoard(game'.Board)
-        return! play (game')
-      | Clear      -> return! ready()
-      | _          ->  failwith "play: unexpected message"
+      | MakeMove m   -> return! play (game.Move m)
+      | ComputerMove -> return! play (game.ComputerMove())
+      | Clear        -> return! ready()
+      | _            -> failwith "play: unexpected message"
     }
 
   // Start
