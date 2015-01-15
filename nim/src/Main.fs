@@ -3,13 +3,16 @@ namespace Nim
 module Main =
 
   open Nim.Core
+  open Nim.Utils
   open Nim.Exceptions
+  open Nim.Service
 
   [<EntryPoint>]
   let main argv =
 
-    try
-      let g = newGame ()
+    let play (s:string) =
+
+      let g = new Game(First, new Board(parseInts s))
 
       printBoard g.Board
 
@@ -27,8 +30,11 @@ module Main =
       printBoard g''.Board
 
       printfn "finished: %b, winner: %A" g''.Finished g''.Turn
+      ignore <| g''.Move(1, 1)
 
-      g''.Move(1, 1)
+    try
+
+      fetch "http://www2.compute.dtu.dk/~mire/nim.game" (play)
 
       0
 
