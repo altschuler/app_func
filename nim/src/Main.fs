@@ -3,17 +3,32 @@ namespace Nim
 module Main =
 
   open Nim.Core
+  open Nim.Exceptions
 
   [<EntryPoint>]
   let main argv =
 
-    let g = newGame ()
+    try
+      let g = newGame ()
 
-    printBoard g.Board
+      printBoard g.Board
 
-    let g' = g.Move 0 1
-    let g'' = g'.Move 3 2
+      let g' = (g.Move 0 1).Move 3 2
 
-    printBoard g''.Board
+      printBoard g'.Board
 
-    0
+      printfn "finished: %b" g'.Finished
+
+      let g'' = ((g'.Move 1 3).Move 2 5).Move 3 5
+
+      printBoard g''.Board
+
+      printfn "finished: %b, winner: %A" g''.Finished g''.Turn
+
+      g''.Move 1 1
+
+      0
+
+    with
+      | InvalidMove(s) -> failwith s
+      | GameFinished(s) -> failwith s

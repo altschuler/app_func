@@ -3,6 +3,7 @@ namespace Nim
 module Core =
 
   open Nim.Utils
+  open Nim.Exceptions
 
 
   // types
@@ -14,6 +15,7 @@ module Core =
     member this.Heaps = heaps
 
     member this.Take (heap:int) (number:int) : Board =
+      if (List.nth heaps heap) - number < 0 then raiseInvalidMove heap
       new Board(setNth heaps heap ((List.nth heaps heap) - number))
 
 
@@ -25,8 +27,10 @@ module Core =
 
     member this.Board = board
 
+    member this.Finished = (List.sum this.Board.Heaps) = 0
+
     member this.Move (heap:int) (number:int) : Game =
-      printfn "%A player: Took %d from heap #%d" turn number heap
+      if this.Finished then raiseGameFinished ()
 
       let newTurn = match turn with
         | First -> Second
