@@ -90,15 +90,21 @@ module Main =
 
     let! msg = ev.Receive()
 
-    match msg with
-      | Web str ->
-        let game = new Game(First, new Board(parseInts str), false)
-        return! play game
-      //| Error   -> return! play("Error")
-      | Cancel  ->
-        ts.Cancel()
-        return! cancelling ()
-      | x       -> failwith (sprintf "loading: unexpected message '%A'" x)
+    try
+      match msg with
+        | Web str ->
+          try
+            let game = new Game(First, new Board(parseInts str), false)
+            return! play game
+          with
+            | :? System.FormatException -> raiseParseError url
+        | Error   -> return! ready (Some "An error occured while fetching")
+        | Cancel  ->
+          ts.Cancel()
+          return! cancelling ()
+        | x       -> failwith (sprintf "loading: unexpected message '%A'" x)
+    with
+      | ParseError(s) -> return! ready (Some s)
     }
 
   and cancelling () = async {
