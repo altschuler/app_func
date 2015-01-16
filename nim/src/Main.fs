@@ -102,7 +102,7 @@ module Main =
         | Loaded str ->
           try
             let game = new Game(Human, new Board(parseInts str), false)
-            return! play game
+            return! play game None
           with
             | :? System.FormatException -> raiseParseError url
         | Error   -> return! ready (Some "An error occured while fetching")
@@ -126,15 +126,15 @@ module Main =
       | x        -> failwith (sprintf "cancelling: unexpected message '%A'" x)
     }
 
-  and play (game:Game) = async {
-    ui.Render (Playing game)
+  and play (game:Game) ss = async {
+    ui.Render (Playing (game, ss))
 
     let! msg = ev.Receive()
 
     match msg with
       | Cancel       -> return! ready None
-      | HumanMove m  -> return! play (tryMove game m)
-      | ComputerMove -> return! play (game.ComputerMove())
+      | HumanMove m  -> return! play (tryMove game m) None
+      | ComputerMove -> return! play (game.ComputerMove()) None // TODO: fix ai
       | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     }
 

@@ -8,4 +8,4 @@ module UI =
     | Ready of string option
     | Loading of string
     | Cancelling
-    | Playing of Game
+    | Playing of Game * string option

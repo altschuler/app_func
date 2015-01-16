@@ -129,14 +129,16 @@ module GUI =
           setStatus "Cancelling..."
           disable [loadButton; cancelButton; moveButton; compButton]
 
-        | Playing game ->
+        | Playing (game, ss) ->
+          match ss with
+            | Some s -> setStatus s
+            | None   ->
+              setStatus (sprintf "Make a move, %A!" game.Turn)
           drawBoard game.Board
           disable [loadButton]
 
-
+          // TODO: merge with above msg handling dauda
           if game.Finished
           then
             setStatus "Game finished"
             disable [moveButton; compButton]
-          else
-            setStatus "Playing game"
