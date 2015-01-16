@@ -2,7 +2,7 @@ CC = fsharpc
 MO = mono
 
 SRC = src/Utils.fs src/Exceptions.fs src/Core.fs \
-	src/Service.fs src/GUI.fs src/Main.fs
+	src/Service.fs src/UI.fs src/GUI.fs src/Main.fs
 EXE = bin/nim.exe
 
 all: run

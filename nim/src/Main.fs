@@ -8,6 +8,7 @@ module Main =
   open System.Windows.Forms
   open System.Drawing
 
+  open Nim.UI
   open Nim.GUI
   open Nim.Exceptions
   open Nim.Core
@@ -67,13 +68,7 @@ module Main =
   // functions
 
   let rec ready (m : string option) = async {
-    match m with
-      | Some s -> gui.SetStatus s
-      | None   ->
-        gui.SetStatus "Hello"
-        gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
-
-    gui.Disable [gui.CancelButton; gui.MoveButton; gui.CompButton]
+    gui.Render (Ready m)
 
     let! msg = ev.Receive()
 
@@ -83,9 +78,7 @@ module Main =
     }
 
   and loading url = async {
-    gui.SetStatus (sprintf "Fetching game from %s..." url)
-
-    gui.Disable [gui.LoadButton; gui.MoveButton; gui.CompButton]
+    gui.Render (Loading url)
 
     use ts = new CancellationTokenSource()
 
@@ -109,9 +102,7 @@ module Main =
     }
 
   and cancelling () = async {
-    gui.SetStatus "Cancelling..."
-
-    gui.Disable [gui.LoadButton; gui.CancelButton; gui.MoveButton; gui.CompButton]
+    gui.Render Cancelling
 
     let! msg = ev.Receive()
 
@@ -121,15 +112,7 @@ module Main =
     }
 
   and play (game:Game) = async {
-    gui.Render game
-    gui.Disable [gui.LoadButton]
-
-    if game.Finished
-    then
-      gui.SetStatus "Game finished"
-      gui.Disable [gui.MoveButton; gui.CompButton]
-    else
-      gui.SetStatus "Playing game"
+    gui.Render (Playing game)
 
     try
       let! msg = ev.Receive()
@@ -141,7 +124,7 @@ module Main =
         | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     with
       | InvalidMove(s) ->
-        gui.SetStatus s
+        gui.Notify s
         ignore <| play game
     }
 

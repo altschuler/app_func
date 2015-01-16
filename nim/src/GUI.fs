@@ -4,7 +4,9 @@ module GUI =
 
   open System.Windows.Forms
   open System.Drawing
+
   open Nim.Core
+  open Nim.UI
 
   type GUI(loadFn, cancelFn, moveFn, compFn) =
 
@@ -67,6 +69,23 @@ module GUI =
         MaximumSize = Size(100, 25),
         Text = "Computer")
 
+    // helpers
+
+    let setStatus s = status.Text <- s
+
+    let buttons = [loadButton; cancelButton; moveButton; compButton]
+
+    let disable (bs : Button list) =
+      for b in buttons do
+        b.Enabled <- true
+      for b in bs do
+        b.Enabled <- false
+
+    let drawBoard (b : Board) =
+      board.Text <- List.fold (fun acc h ->
+                               sprintf "%s\n%s" acc (String.replicate h "x  ")
+                               ) "" b.Heaps
+
     do
       // listeners
       loadButton.Click.Add   (fun _ -> loadFn urlBox.Text)
@@ -84,27 +103,40 @@ module GUI =
       window.Controls.Add moveButton
       window.Controls.Add compButton
 
-    // components TODO: remove
-    member this.Window       = window
-    member this.Label        = label
-    member this.UrlBox       = urlBox
-    member this.Status       = status
-    member this.LoadButton   = loadButton
-    member this.CancelButton = cancelButton
-    member this.MoveButton   = moveButton
-    member this.CompButton   = compButton
+    // accessors
+
+    member this.Window = window
 
     // functions
 
-    member this.Disable (bs : Button list) =
-      for b in [loadButton; cancelButton; moveButton; compButton] do
-        b.Enabled <- true
-      for b in bs do
-        b.Enabled <- false
+    member this.Notify = setStatus
 
-    member this.SetStatus s = this.Status.Text <- s
+    member this.Render (state : UIState) =
+      match state with
+        | Ready ss ->
+          match ss with
+            | Some s -> setStatus s
+            | None   ->
+              setStatus "Welcome!"
+              urlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
+          disable [cancelButton; moveButton; compButton]
 
-    member this.Render (game:Game) =
-      board.Text <- List.fold (fun acc h ->
-                               sprintf "%s\n%s" acc (String.replicate h "x  ")
-                               ) "" game.Board.Heaps
+        | Loading url ->
+          setStatus (sprintf "Fetching %s..." url)
+          disable [loadButton; moveButton; compButton]
+
+        | Cancelling ->
+          setStatus "Cancelling..."
+          disable [loadButton; cancelButton; moveButton; compButton]
+
+        | Playing game ->
+          drawBoard game.Board
+          disable [loadButton]
+
+
+          if game.Finished
+          then
+            setStatus "Game finished"
+            disable [moveButton; compButton]
+          else
+            setStatus "Playing game"
