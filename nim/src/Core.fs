@@ -20,7 +20,7 @@ module Core =
 
   type GameMove = int * int
 
-  type Player = First | Second
+  type Player = Human | Computer
 
   type Game(turn : Player, board : Board, didTaunt : bool) =
 
@@ -34,7 +34,7 @@ module Core =
 
     member this.Taunt() =
       if not didTaunt
-        && this.Turn = First
+        && this.Turn = Human
         && this.NimSum this.Board.Heaps = 0
       then (true, new Game(this.Turn, this.Board, true))
       else (false, this)
@@ -46,8 +46,8 @@ module Core =
 
       let newTurn =
         match turn with
-          | First -> Second
-          | Second -> First
+          | Human -> Computer
+          | Computer -> Human
 
       new Game(newTurn, (this.Board.Take heap number), this.DidTaunt)
 
@@ -69,7 +69,7 @@ module Core =
 
   // helpers
 
-  let newGame () : Game = new Game(First, new Board([1; 3; 5; 7]), false)
+  let newGame () : Game = new Game(Human, new Board([1; 3; 5; 7]), false)
 
   let printBoard (b : Board) =
     List.mapi (fun i h ->

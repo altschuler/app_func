@@ -14,12 +14,3 @@ module Service =
       let! html = webClient.AsyncDownloadString(uri)
       return html
       }
-
-    //member this.Cancel() = this.EventQueue.Post Cancel
-
-  // let fetch (url : string) cb =
-  //   [url]
-  //   |> Seq.map (fetchAsync cb)
-  //   |> Async.Parallel
-  //   |> Async.RunSynchronously
-  //   |> ignore
