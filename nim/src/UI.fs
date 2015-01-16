@@ -9,3 +9,11 @@ module UI =
     | Loading of string
     | Cancelling
     | Playing of Game * string option
+
+  type UI =
+
+    abstract member Go : unit -> unit
+
+    abstract member Render : UIState -> unit
+
+    abstract member Notify : string -> unit

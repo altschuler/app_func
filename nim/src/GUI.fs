@@ -103,42 +103,42 @@ module GUI =
       window.Controls.Add moveButton
       window.Controls.Add compButton
 
-    // accessors
-
-    member this.Window = window
-
     // functions
 
-    member this.Notify = setStatus
+    interface UI with
 
-    member this.Render (state : UIState) =
-      match state with
-        | Ready ss ->
-          match ss with
-            | Some s -> setStatus s
-            | None   ->
-              setStatus "Welcome!"
-              urlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
-          disable [cancelButton; moveButton; compButton]
+      member this.Go () = Application.Run window
 
-        | Loading url ->
-          setStatus (sprintf "Fetching %s..." url)
-          disable [loadButton; moveButton; compButton]
+      member this.Notify s = setStatus s
 
-        | Cancelling ->
-          setStatus "Cancelling..."
-          disable [loadButton; cancelButton; moveButton; compButton]
+      member this.Render (state : UIState) =
+        match state with
+          | Ready ss ->
+            match ss with
+              | Some s -> setStatus s
+              | None   ->
+                setStatus "Welcome!"
+                urlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
+            disable [cancelButton; moveButton; compButton]
 
-        | Playing (game, ss) ->
-          match ss with
-            | Some s -> setStatus s
-            | None   ->
-              setStatus (sprintf "Make a move, %A!" game.Turn)
-          drawBoard game.Board
-          disable [loadButton]
+          | Loading url ->
+            setStatus (sprintf "Fetching %s..." url)
+            disable [loadButton; moveButton; compButton]
 
-          // TODO: merge with above msg handling dauda
-          if game.Finished
-          then
-            setStatus "Game finished"
-            disable [moveButton; compButton]
+          | Cancelling ->
+            setStatus "Cancelling..."
+            disable [loadButton; cancelButton; moveButton; compButton]
+
+          | Playing (game, ss) ->
+            match ss with
+              | Some s -> setStatus s
+              | None   ->
+                setStatus (sprintf "Make a move, %A!" game.Turn)
+            drawBoard game.Board
+            disable [loadButton]
+
+            // TODO: merge with above msg handling dauda
+            if game.Finished
+            then
+              setStatus "Game finished"
+              disable [moveButton; compButton]

@@ -61,7 +61,7 @@ module Main =
       (fun url  -> ev.Post (Load url)),
       (fun _    -> ev.Post Cancel),
       (fun move -> ev.Post (HumanMove move)),
-      (fun _    -> ev.Post ComputerMove))
+      (fun _    -> ev.Post ComputerMove)) :> UI
 
   let gameLoader = GameLoader()
 
@@ -142,4 +142,4 @@ module Main =
   // go
 
   Async.StartImmediate(ready None)
-  Application.Run(ui.Window)
+  ui.Go ()
