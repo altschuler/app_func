@@ -21,18 +21,18 @@ module Main =
   type AsyncEventQueue<'T>() =
       let mutable cont = None
       let queue = System.Collections.Generic.Queue<'T>()
-      let tryTrigger() =
-          match queue.Count, cont with
+      let tryTrigger () =
+        match queue.Count, cont with
           | _, None -> ()
           | 0, _ -> ()
           | _, Some d ->
-              cont <- None
-              d (queue.Dequeue())
+            cont <- None
+            d (queue.Dequeue())
 
-      let tryListen(d) =
-          if cont.IsSome then invalidOp "multicast not allowed"
-          cont <- Some d
-          tryTrigger()
+      let tryListen d =
+        if cont.IsSome then invalidOp "multicast not allowed"
+        cont <- Some d
+        tryTrigger ()
 
       member x.Post msg = queue.Enqueue msg; tryTrigger()
       member x.Receive() =
@@ -56,10 +56,11 @@ module Main =
 
   let ev = AsyncEventQueue()
 
-  let gui = GUI (
-    (fun url  -> ev.Post (LoadGame url)),
-    (fun move -> ev.Post (MakeMove move)),
-    (fun _    -> ev.Post ComputerMove))
+  let gui =
+    GUI (
+      (fun url  -> ev.Post (LoadGame url)),
+      (fun move -> ev.Post (MakeMove move)),
+      (fun _    -> ev.Post ComputerMove))
 
   let gameLoader = GameLoader()
 
@@ -143,7 +144,7 @@ module Main =
     with
       | InvalidMove(s) ->
         gui.SetStatus s
-        play game
+        ignore <| play game
     }
 
 
