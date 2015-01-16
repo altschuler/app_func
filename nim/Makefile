@@ -19,4 +19,8 @@ run: build
 	@echo ''
 	$(MO) $(EXE)
 
-.PHONY: all clean build run
+cli: build
+	@echo ''
+	$(MO) $(EXE) -nw
+
+.PHONY: all clean build run cli
