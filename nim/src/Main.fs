@@ -67,6 +67,12 @@ module Main =
 
 
   // functions
+  let tryMove (game:Game) move =
+    try game.Move move
+    with
+      | InvalidMove(s) ->
+        ui.Notify s
+        game
 
   let rec ready (m : string option) = async {
     ui.Render (Ready m)
@@ -125,16 +131,11 @@ module Main =
 
     let! msg = ev.Receive()
 
-    try
-      match msg with
-        | Cancel       -> return! ready None
-        | HumanMove m  -> return! play (game.Move m)
-        | ComputerMove -> return! play (game.ComputerMove())
-        | x            -> failwith (sprintf "play: unexpected message '%A'" x)
-    with
-      | InvalidMove(s) ->
-        ui.Notify s
-        return! (play game)
+    match msg with
+      | Cancel       -> return! ready None
+      | HumanMove m  -> return! play (tryMove game m)
+      | ComputerMove -> return! play (game.ComputerMove())
+      | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     }
 
 
