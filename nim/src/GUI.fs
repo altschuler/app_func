@@ -32,12 +32,12 @@ module GUI =
         AutoSize = true,
         Location = Point(25, 100))
 
-    let startButton =
+    let loadButton =
       new Button(
         Location = Point(450, 50),
         MinimumSize = Size(50, 25),
         MaximumSize = Size(50, 25),
-        Text = "Get")
+        Text = "Load")
 
     let board =
       new Label(
@@ -46,13 +46,6 @@ module GUI =
         AutoSize = true,
         Location = Point(25, 150))
 
-    let compButton =
-      new Button(
-        Location = Point(525, 100),
-        MinimumSize = Size(50, 25),
-        MaximumSize = Size(100, 25),
-        Text = "Computer")
-
     let moveButton =
       new Button(
         Location = Point(525, 50),
@@ -60,9 +53,16 @@ module GUI =
         MaximumSize = Size(50, 25),
         Text = "Move")
 
+    let compButton =
+      new Button(
+        Location = Point(525, 100),
+        MinimumSize = Size(50, 25),
+        MaximumSize = Size(100, 25),
+        Text = "Computer")
+
     do
       // listeners
-      startButton.Click.Add (fun _ -> startFn urlBox.Text)
+      loadButton.Click.Add (fun _ -> startFn urlBox.Text)
       moveButton.Click.Add (fun _ -> moveFn (0, 1))
       compButton.Click.Add (fun _ -> compFn ())
 
@@ -70,7 +70,7 @@ module GUI =
       window.Controls.Add(status)
       window.Controls.Add(label)
       window.Controls.Add(urlBox)
-      window.Controls.Add(startButton)
+      window.Controls.Add(loadButton)
       window.Controls.Add(board)
       window.Controls.Add(moveButton)
       window.Controls.Add(compButton)
@@ -80,16 +80,17 @@ module GUI =
     member this.Label = label
     member this.UrlBox = urlBox
     member this.Status = status
-    member this.StartButton = startButton
+    member this.LoadButton = loadButton
     member this.MoveButton = moveButton
     member this.CompButton = compButton
 
     // functions
-    member this.Disable bs =
-      for b in [startButton] do
-        b.Enabled  <- true
-      for (b:Button) in bs do
-        b.Enabled  <- false
+
+    member this.Disable (bs : Button list) =
+      for b in [loadButton; moveButton; compButton] do
+        b.Enabled <- true
+      for b in bs do
+        b.Enabled <- false
 
     member this.SetStatus s = this.Status.Text <- s
 

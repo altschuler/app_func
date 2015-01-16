@@ -1,6 +1,7 @@
 namespace Nim
 
 module Main =
+
   open System
   open System.Net
   open System.Threading
@@ -14,7 +15,9 @@ module Main =
   open Nim.Utils
 
 
-  // An asynchronous event queue kindly provided by Don Syme
+  // types
+
+  // asynchronous event queue kindly provided by Don Syme
   type AsyncEventQueue<'T>() =
       let mutable cont = None
       let queue = System.Collections.Generic.Queue<'T>()
@@ -36,7 +39,7 @@ module Main =
           Async.FromContinuations (fun (cont,econt,ccont) ->
               tryListen cont)
 
-  // An enumeration of the possible events
+  // enumeration of the possible events
   type Message =
     | Start of string
     | Clear
@@ -49,13 +52,19 @@ module Main =
     | LoadGame of string
 
 
+  // variables
+
   let ev = AsyncEventQueue()
 
   let gui = GUI (
     (fun url  -> ev.Post (LoadGame url)),
     (fun move -> ev.Post (MakeMove move)),
     (fun _    -> ev.Post ComputerMove))
+
   let gameLoader = GameLoader()
+
+
+  // functions
 
   let rec ready() = async {
     gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
@@ -82,7 +91,7 @@ module Main =
                                   (fun _ -> ev.Post Cancelled),
                                   ts.Token)
 
-    gui.Disable [gui.StartButton]
+    gui.Disable [gui.LoadButton]
 
     let! msg = ev.Receive()
 
@@ -100,7 +109,7 @@ module Main =
   and cancelling() = async {
     gui.SetStatus "Cancelling"
 
-    gui.Disable [gui.StartButton]
+    gui.Disable [gui.LoadButton]
 
     let! msg = ev.Receive()
 
@@ -111,7 +120,7 @@ module Main =
 
   and play(game) = async {
     gui.Render game
-    gui.Disable [gui.StartButton]
+    gui.Disable [gui.LoadButton]
 
     if game.Finished
     then
@@ -134,6 +143,8 @@ module Main =
         play game
     }
 
-  // Start
+
+  // go
+
   Async.StartImmediate (ready())
   Application.Run(gui.Window)
