@@ -55,7 +55,7 @@ module Main =
 
   let ev = AsyncEventQueue()
 
-  let gui =
+  let ui =
     GUI (
       (fun url  -> ev.Post (Load url)),
       (fun _    -> ev.Post Cancel),
@@ -68,7 +68,7 @@ module Main =
   // functions
 
   let rec ready (m : string option) = async {
-    gui.Render (Ready m)
+    ui.Render (Ready m)
 
     let! msg = ev.Receive()
 
@@ -78,7 +78,7 @@ module Main =
     }
 
   and loading url = async {
-    gui.Render (Loading url)
+    ui.Render (Loading url)
 
     use ts = new CancellationTokenSource()
 
@@ -108,17 +108,19 @@ module Main =
     }
 
   and cancelling () = async {
-    gui.Render Cancelling
+    ui.Render Cancelling
 
     let! msg = ev.Receive()
 
     match msg with
-      | Cancelled | Error | Web  _ -> return! ready (Some "Cancelled fetch")
-      | _    ->  failwith("cancelling: unexpected message")
+      | Cancelled
+      | Error
+      | Web _ -> return! ready (Some "Cancelled fetch")
+      | x     -> failwith (sprintf "cancelling: unexpected message '%A'" x)
     }
 
   and play (game:Game) = async {
-    gui.Render (Playing game)
+    ui.Render (Playing game)
 
     try
       let! msg = ev.Receive()
@@ -130,7 +132,7 @@ module Main =
         | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     with
       | InvalidMove(s) ->
-        gui.Notify s
+        ui.Notify s
         ignore <| play game
     }
 
@@ -138,4 +140,4 @@ module Main =
   // go
 
   Async.StartImmediate(ready None)
-  Application.Run(gui.Window)
+  Application.Run(ui.Window)
