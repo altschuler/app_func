@@ -41,15 +41,13 @@ module Main =
 
   // enumeration of the possible events
   type Message =
-    | Start of string
-    | Clear
-    | Cancel
+    | Load of string
     | Web of string
-    | Error
+    | Cancel
     | Cancelled
+    | Error
     | MakeMove of GameMove
     | ComputerMove
-    | LoadGame of string
 
 
   // variables
@@ -58,7 +56,8 @@ module Main =
 
   let gui =
     GUI (
-      (fun url  -> ev.Post (LoadGame url)),
+      (fun url  -> ev.Post (Load url)),
+      (fun _    -> ev.Post Cancel),
       (fun move -> ev.Post (MakeMove move)),
       (fun _    -> ev.Post ComputerMove))
 
@@ -74,14 +73,13 @@ module Main =
         gui.SetStatus "Hello"
         gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
 
-    gui.Disable []
+    gui.Disable [gui.CancelButton; gui.MoveButton; gui.CompButton]
 
     let! msg = ev.Receive()
 
     match msg with
-      | LoadGame url -> return! loading url
-      | Clear        -> return! ready None
-      | x            -> failwith (sprintf "ready: unexpected message '%A'" x)
+      | Load url -> return! loading url
+      | x        -> failwith (sprintf "ready: unexpected message '%A'" x)
     }
 
   and loading url = async {
@@ -111,14 +109,14 @@ module Main =
     }
 
   and cancelling () = async {
-    gui.SetStatus "Cancelling"
+    gui.SetStatus "Cancelling..."
 
-    gui.Disable [gui.LoadButton; gui.MoveButton]
+    gui.Disable [gui.LoadButton; gui.CancelButton; gui.MoveButton; gui.CompButton]
 
     let! msg = ev.Receive()
 
     match msg with
-      //| Cancelled | Error | Web  _ -> return! finished("Cancelled")
+      | Cancelled | Error | Web  _ -> return! ready (Some "Cancelled fetch")
       | _    ->  failwith("cancelling: unexpected message")
     }
 
@@ -137,9 +135,9 @@ module Main =
       let! msg = ev.Receive()
 
       match msg with
+        | Cancel       -> return! ready None
         | MakeMove m   -> return! play (game.Move m)
         | ComputerMove -> return! play (game.ComputerMove())
-        | Clear        -> return! ready None
         | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     with
       | InvalidMove(s) ->
