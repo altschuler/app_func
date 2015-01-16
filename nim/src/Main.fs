@@ -66,22 +66,27 @@ module Main =
 
   // functions
 
-  let rec ready() = async {
-    gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
-    gui.SetStatus "Hello"
+  let rec ready (m : string option) = async {
+    match m with
+      | Some s -> gui.SetStatus s
+      | None   ->
+        gui.SetStatus "Hello"
+        gui.UrlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
 
     gui.Disable []
 
     let! msg = ev.Receive()
 
     match msg with
-      | LoadGame url -> return! loading(url)
-      | Clear        -> return! ready()
-      | _            -> failwith("ready: unexpected message")
+      | LoadGame url -> return! loading url
+      | Clear        -> return! ready None
+      | x            -> failwith (sprintf "ready: unexpected message '%A'" x)
     }
 
-  and loading(url) = async {
+  and loading url = async {
     gui.SetStatus (sprintf "Fetching game from %s..." url)
+
+    gui.Disable [gui.LoadButton; gui.MoveButton; gui.CompButton]
 
     use ts = new CancellationTokenSource()
 
@@ -91,25 +96,23 @@ module Main =
                                   (fun _ -> ev.Post Cancelled),
                                   ts.Token)
 
-    gui.Disable [gui.LoadButton]
-
     let! msg = ev.Receive()
 
     match msg with
       | Web str ->
-          let ints = parseInts str
-          let game = new Game(First, new Board(ints), false)
-          return! play(game)
+        let game = new Game(First, new Board(parseInts str), false)
+        return! play game
       //| Error   -> return! play("Error")
-      | Cancel  -> ts.Cancel()
-                   return! cancelling()
-      | _       -> failwith("loading: unexpected message")
+      | Cancel  ->
+        ts.Cancel()
+        return! cancelling ()
+      | x       -> failwith (sprintf "loading: unexpected message '%A'" x)
     }
 
-  and cancelling() = async {
+  and cancelling () = async {
     gui.SetStatus "Cancelling"
 
-    gui.Disable [gui.LoadButton]
+    gui.Disable [gui.LoadButton; gui.MoveButton]
 
     let! msg = ev.Receive()
 
@@ -118,16 +121,16 @@ module Main =
       | _    ->  failwith("cancelling: unexpected message")
     }
 
-  and play(game) = async {
+  and play (game:Game) = async {
     gui.Render game
     gui.Disable [gui.LoadButton]
 
     if game.Finished
     then
-    gui.SetStatus "Game finished"
-    gui.Disable [gui.MoveButton; gui.CompButton]
+      gui.SetStatus "Game finished"
+      gui.Disable [gui.MoveButton; gui.CompButton]
     else
-    gui.SetStatus "Playing game"
+      gui.SetStatus "Playing game"
 
     try
       let! msg = ev.Receive()
@@ -135,8 +138,8 @@ module Main =
       match msg with
         | MakeMove m   -> return! play (game.Move m)
         | ComputerMove -> return! play (game.ComputerMove())
-        | Clear        -> return! ready()
-        | _            -> failwith "play: unexpected message"
+        | Clear        -> return! ready None
+        | x            -> failwith (sprintf "play: unexpected message '%A'" x)
     with
       | InvalidMove(s) ->
         gui.SetStatus s
@@ -146,5 +149,5 @@ module Main =
 
   // go
 
-  Async.StartImmediate (ready())
+  Async.StartImmediate(ready None)
   Application.Run(gui.Window)
