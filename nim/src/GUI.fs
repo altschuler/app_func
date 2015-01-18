@@ -71,15 +71,19 @@ module GUI =
 
     // helpers
 
-    let setStatus s = status.Text <- s
+    let setStatus (s : string) = status.Text <- s
 
-    let buttons = [loadButton; cancelButton; moveButton; compButton]
+    let buttons : Button list = [
+      loadButton;
+      cancelButton;
+      moveButton;
+      compButton
+      ]
 
     let disable (bs : Button list) =
-      for b in buttons do
-        b.Enabled <- true
-      for b in bs do
-        b.Enabled <- false
+      ignore <| List.map (fun (b : Button) ->
+                          b.Enabled <- (not (List.exists ((=) b) bs))
+                          ) buttons
 
     let drawBoard (b : Board) =
       board.Text <- List.fold (fun acc h ->
@@ -132,8 +136,7 @@ module GUI =
           | Playing (game, ss) ->
             match ss with
               | Some s -> setStatus s
-              | None   ->
-                setStatus (sprintf "Make a move, %A!" game.Turn)
+              | None   -> setStatus (sprintf "Make a move, %A!" game.Turn)
             drawBoard game.Board
             disable [loadButton]
 
