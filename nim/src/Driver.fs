@@ -81,10 +81,10 @@ module Driver =
 
       match msg with
         | Load url -> return! loading url
-        | x        -> failwith (sprintf "ready: unexpected message '%A'" x)
+        | _        -> return! ready (Some(sprintf "Unexpected message %A in state Ready" msg))
       }
 
-    and loading url = async {
+    and loading (url : string) = async {
       ui.Render (Loading url)
 
       use ts = new CancellationTokenSource()
@@ -109,7 +109,7 @@ module Driver =
           | Cancel  ->
             ts.Cancel()
             return! cancelling ()
-          | x       -> failwith (sprintf "loading: unexpected message '%A'" x)
+          | _       -> return! ready (Some(sprintf "Unexpected message %A in state Loading" msg))
       with
         | ParseError(s) -> return! ready (Some s)
       }
@@ -123,7 +123,7 @@ module Driver =
         | Cancelled
         | Error
         | Loaded _ -> return! ready (Some "Cancelled fetch")
-        | x        -> failwith (sprintf "cancelling: unexpected message '%A'" x)
+        | _        -> return! ready (Some(sprintf "Unexpected message %A in state Cancelling" msg))
       }
 
     and play (game:Game) ss = async {
@@ -135,7 +135,7 @@ module Driver =
         | Cancel       -> return! ready None
         | HumanMove m  -> return! play (tryMove game m) None
         | ComputerMove -> return! play (game.ComputerMove()) None // TODO: fix ai
-        | x            -> failwith (sprintf "play: unexpected message '%A'" x)
+        | _            -> return! play game (Some(sprintf "Unexpected message %A in state Playing" msg))
       }
 
 

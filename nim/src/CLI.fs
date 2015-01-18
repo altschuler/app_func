@@ -7,12 +7,13 @@ module CLI =
   open Nim.Core
   open Nim.UI
 
+
   type CLI(loadFn, cancelFn, moveFn, compFn) =
 
     // helpers
 
     let commands = [
-      ("load [url]", "load game from given url (defaults to 'http://www2.compute.dtu.dk/~mire/nim.game')");
+      ("load [url]", sprintf "load game from given url (defaults to '%s')" defaultUrl);
       ("cancel", "cancel load");
       ("move <heap> <number>", "take given number of matches from heap");
       ("comp", "computer move")
@@ -23,13 +24,11 @@ module CLI =
                                  sprintf "%s\n%s" acc (String.replicate h "x  ")
                                  ) "" b.Heaps
 
-    //do
-      // listeners
-      // loadButton.Click.Add   (fun _ -> loadFn urlBox.Text)
-      // cancelButton.Click.Add (fun _ -> cancelFn ())
-      // moveButton.Click.Add   (fun _ -> moveFn (0, 1))
-      // compButton.Click.Add   (fun _ -> compFn ())
+    let drawPrompt () = printf "> "
 
+    let printError s =
+      printfn "%s" s
+      drawPrompt ()
 
     // functions
 
@@ -37,37 +36,40 @@ module CLI =
 
       member this.Go () =
         while true do
-          printf "> "
           let input = Console.ReadLine().Split ' '
+
           match input.[0] with
             | "load"   ->
               if input.Length > 1
               then loadFn input.[1]
               else loadFn "http://www2.compute.dtu.dk/~mire/nim.game"
+
             | "cancel" -> cancelFn ()
+
             | "move"   ->
-              if input.Length < 3
-              then printfn "Wrong number of arguments"
-              else moveFn (int input.[1], int input.[2])
+              try moveFn (int input.[1], int input.[2])
+              with
+                | :? FormatException
+                | :? IndexOutOfRangeException -> printError "Wrong arguments, expected two ints"
+
             | "comp"   -> compFn ()
+
             | "help"   ->
               printfn "Commands:"
               ignore <| List.map (fun (c, d) -> printfn "\t%20s  -  %s" c d) commands
-              // List.map (fun c -> printfn "%A" c) commands
-            | x        -> printfn "Unknown command '%s'" x
+
+            | x        -> printError (sprintf "Unknown command '%s'" x)
 
       member this.Notify s = printfn "%s" s
 
       member this.Render (state : UIState) =
-        printfn "Rendering %A" state
-
         match state with
           | Ready ss ->
             match ss with
               | Some s -> printfn "%s" s
               | None   ->
-                printfn "Welcome!"
-                printfn "Type 'help' for commands"
+                printfn "Welcome!\nType 'help' for commands"
+            drawPrompt ()
 
           | Loading url ->
             printfn "Fetching %s..." url
@@ -84,3 +86,5 @@ module CLI =
             // TODO: merge with above msg handling dauda
             if game.Finished
             then printfn "Game finished"
+
+            drawPrompt ()
