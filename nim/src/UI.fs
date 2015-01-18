@@ -17,3 +17,5 @@ module UI =
     abstract member Render : UIState -> unit
 
     abstract member Notify : string -> unit
+
+  let defaultUrl = "http://www2.compute.dtu.dk/~mire/nim.game"

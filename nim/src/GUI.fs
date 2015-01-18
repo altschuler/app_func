@@ -118,7 +118,7 @@ module GUI =
               | Some s -> setStatus s
               | None   ->
                 setStatus "Welcome!"
-                urlBox.Text <- "http://www2.compute.dtu.dk/~mire/nim.game"
+                urlBox.Text <- defaultUrl
             disable [cancelButton; moveButton; compButton]
 
           | Loading url ->
