@@ -3,7 +3,7 @@ MO = mono
 
 SRC = src/Utils.fs src/Exceptions.fs src/Core.fs \
 	src/Service.fs src/UI.fs src/GUI.fs \
-	src/Driver.fs src/Main.fs
+	src/CLI.fs src/Driver.fs src/Main.fs
 EXE = bin/nim.exe
 
 all: run

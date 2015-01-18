@@ -57,6 +57,11 @@ module Driver =
 
   let gameLoader = GameLoader()
 
+  let loadFn url  = ev.Post (Load url)
+  let cancelFn _  = ev.Post Cancel
+  let moveFn move = ev.Post (HumanMove move)
+  let compFn _    = ev.Post ComputerMove
+
 
   // functions
 

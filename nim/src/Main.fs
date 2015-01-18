@@ -7,26 +7,26 @@ module Main =
   open Nim.Driver
   open Nim.UI
   open Nim.GUI
+  open Nim.CLI
 
 
   [<EntryPoint>]
   let main args =
 
-    // cli
     if Array.exists ((=) "-nw") args
     then
-      printfn "Ja Simon, vi skal ha et CLI"
-
-    // gui
+      go (CLI (
+        (loadFn),
+        (cancelFn),
+        (moveFn),
+        (compFn)
+        ) :> UI)
     else
-      let ui =
-        GUI (
-          (fun url  -> ev.Post (Load url)),
-          (fun _    -> ev.Post Cancel),
-          (fun move -> ev.Post (HumanMove move)),
-          (fun _    -> ev.Post ComputerMove)
-          ) :> UI
-
-      go ui
+      go (GUI (
+        (loadFn),
+        (cancelFn),
+        (moveFn),
+        (compFn)
+        ) :> UI)
 
     0
