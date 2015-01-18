@@ -56,7 +56,8 @@ module CLI =
 
             | "help"   ->
               printfn "Commands:"
-              ignore <| List.map (fun (c, d) -> printfn "\t%20s  -  %s" c d) commands
+              List.map (fun (c, d) -> printfn "\t%20s  -  %s" c d) commands
+              ignore <| drawPrompt ()
 
             | x        -> printError (sprintf "Unknown command '%s'" x)
 
