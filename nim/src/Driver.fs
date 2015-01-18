@@ -68,11 +68,9 @@ module Driver =
   let go (ui : UI) =
 
     let tryMove (game:Game) move =
-      try game.Move move
+      try (game.Move move, None)
       with
-        | InvalidMove(s) ->
-          ui.Notify s
-          game
+        | InvalidMove(s) -> (game, Some(s))
 
     let rec ready (m : string option) = async {
       ui.Render (Ready m)
@@ -133,7 +131,9 @@ module Driver =
 
       match msg with
         | Cancel       -> return! ready None
-        | HumanMove m  -> return! play (tryMove game m) None
+        | HumanMove m  ->
+          let (game', ss') = tryMove game m
+          return! play game' ss'
         | ComputerMove -> return! play (game.ComputerMove()) None // TODO: fix ai
         | _            -> return! play game (Some(sprintf "Unexpected message %A in state Playing" msg))
       }
