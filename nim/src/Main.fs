@@ -9,24 +9,26 @@ module Main =
   open Nim.GUI
   open Nim.CLI
 
+  let parseUI args =
+    if Array.exists ((=) "-nw") args
+    then
+      CLI (
+        (loadFn),
+        (cancelFn),
+        (moveFn),
+        (compFn)
+        ) :> UI
+    else
+      GUI (
+        (loadFn),
+        (cancelFn),
+        (moveFn),
+        (compFn)
+        ) :> UI
 
   [<EntryPoint>]
   let main args =
 
-    if Array.exists ((=) "-nw") args
-    then
-      go (CLI (
-        (loadFn),
-        (cancelFn),
-        (moveFn),
-        (compFn)
-        ) :> UI)
-    else
-      go (GUI (
-        (loadFn),
-        (cancelFn),
-        (moveFn),
-        (compFn)
-        ) :> UI)
+    go (parseUI args)
 
     0
