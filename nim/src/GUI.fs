@@ -71,6 +71,8 @@ module GUI =
 
     // helpers
 
+    let matchImage = Image.FromFile("images/doge_50.png")
+
     let setStatus (s : string) = status.Text <- s
 
     let buttons : Button list = [
