@@ -16,6 +16,6 @@ module UI =
 
     abstract member Render : UIState -> unit
 
-    abstract member Notify : string -> unit
+  let tauntMsg = "You're gonna lose!"
 
   let defaultUrl = "http://www2.compute.dtu.dk/~mire/nim.game"

@@ -85,6 +85,13 @@ module GUI =
                           b.Enabled <- (not (List.exists ((=) b) bs))
                           ) buttons
 
+    let prompt title body =
+      ignore <| MessageBox.Show(
+        body,
+        title,
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Warning)
+
     let drawBoard (b : Board) =
       board.Text <- List.fold (fun acc h ->
                                sprintf "%s\n%s" acc (String.replicate h "x  ")
@@ -94,7 +101,7 @@ module GUI =
       // listeners
       loadButton.Click.Add   (fun _ -> loadFn urlBox.Text)
       cancelButton.Click.Add (fun _ -> cancelFn ())
-      moveButton.Click.Add   (fun _ -> moveFn (0, 1))
+      moveButton.Click.Add   (fun _ -> moveFn (0, 4))
       compButton.Click.Add   (fun _ -> compFn ())
 
       // finish
@@ -112,8 +119,6 @@ module GUI =
     interface UI with
 
       member this.Go () = Application.Run window
-
-      member this.Notify s = setStatus s
 
       member this.Render (state : UIState) =
         match state with
@@ -134,9 +139,12 @@ module GUI =
             disable [loadButton; cancelButton; moveButton; compButton]
 
           | Playing (game, ss) ->
+            if game.DidTauntThisTurn then prompt "Computer says" tauntMsg
+
             match ss with
               | Some s -> setStatus s
               | None   -> setStatus (sprintf "Make a move, %A!" game.Turn)
+
             drawBoard game.Board
             disable [loadButton]
 

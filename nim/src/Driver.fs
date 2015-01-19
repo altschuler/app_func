@@ -99,7 +99,7 @@ module Driver =
         match msg with
           | Loaded str ->
             try
-              let game = new Game(Human, new Board(parseInts str), false)
+              let game = new Game(Human, new Board(parseInts str), false, false)
               return! play game None
             with
               | :? System.FormatException -> raiseParseError url
@@ -125,17 +125,19 @@ module Driver =
       }
 
     and play (game:Game) ss = async {
-      ui.Render (Playing (game, ss))
+      let game' = game.CheckTaunt()
+
+      ui.Render (Playing (game', ss))
 
       let! msg = ev.Receive()
 
       match msg with
         | Cancel       -> return! ready None
         | HumanMove m  ->
-          let (game', ss') = tryMove game m
-          return! play game' ss'
-        | ComputerMove -> return! play (game.ComputerMove()) None // TODO: fix ai
-        | _            -> return! play game (Some(sprintf "Unexpected message %A in state Playing" msg))
+          let (game'', ss') = tryMove game' m
+          return! play game'' ss'
+        | ComputerMove -> return! play (game'.ComputerMove()) None // TODO: fix ai
+        | _            -> return! play game' (Some(sprintf "Unexpected message %A in state Playing" msg))
       }
 
 

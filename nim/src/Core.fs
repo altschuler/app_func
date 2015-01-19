@@ -22,7 +22,7 @@ module Core =
 
   type Player = Human | Computer
 
-  type Game(turn : Player, board : Board, didTaunt : bool) =
+  type Game(turn : Player, board : Board, didTaunt : bool, didTauntThisTurn : bool) =
 
     member private this.NimSum = List.reduce (^^^)
 
@@ -32,12 +32,15 @@ module Core =
 
     member this.DidTaunt = didTaunt
 
-    member this.Taunt() =
+    member this.DidTauntThisTurn = didTauntThisTurn
+
+    member this.CheckTaunt() =
       if not didTaunt
+        && (not didTauntThisTurn)
         && this.Turn = Human
         && this.NimSum this.Board.Heaps = 0
-      then (true, new Game(this.Turn, this.Board, true))
-      else (false, this)
+      then new Game(this.Turn, this.Board, true, true)
+      else new Game(this.Turn, this.Board, this.DidTaunt, false)
 
     member this.Finished = (List.sum this.Board.Heaps) = 0
 
@@ -49,7 +52,7 @@ module Core =
           | Human -> Computer
           | Computer -> Human
 
-      new Game(newTurn, (this.Board.Take heap number), this.DidTaunt)
+      new Game(newTurn, (this.Board.Take heap number), this.DidTaunt, this.DidTauntThisTurn)
 
     member this.ComputerMove() : Game =
       let m = this.NimSum this.Board.Heaps
@@ -69,7 +72,7 @@ module Core =
 
   // helpers
 
-  let newGame () : Game = new Game(Human, new Board([1; 3; 5; 7]), false)
+  let newGame () : Game = new Game(Human, new Board([1; 3; 5; 7]), false, false)
 
   let printBoard (b : Board) =
     List.mapi (fun i h ->

@@ -61,8 +61,6 @@ module CLI =
 
             | x        -> printError (sprintf "Unknown command '%s'" x)
 
-      member this.Notify s = printfn "%s" s
-
       member this.Render (state : UIState) =
         match state with
           | Ready ss ->
@@ -78,6 +76,8 @@ module CLI =
             printfn "Cancelling..."
 
           | Playing (game, ss) ->
+            if game.DidTauntThisTurn then printfn "%s" tauntMsg
+
             match ss with
               | Some s -> printfn "%s" s
               | None   -> printfn "Make a move, %A!" game.Turn
