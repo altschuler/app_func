@@ -61,13 +61,6 @@ module CLI =
             | x        -> printError (sprintf "Unknown command '%s'" x)
 
 
-      member this.ShowWinner player =
-        let msg = match player with
-          | Human    -> "You won :)"
-          | Computer -> "You lost :'("
-        printfn "%s" msg
-
-
       member this.Render (state : UIState) =
         match state with
           | Ready ss ->
@@ -91,4 +84,11 @@ module CLI =
 
             drawBoard game.Board
 
+            drawPrompt ()
+
+          | Finished player ->
+            let msg = match player with
+              | Human    -> "You won :)"
+              | Computer -> "You lost :'("
+            printfn "Game finished: %s" msg
             drawPrompt ()

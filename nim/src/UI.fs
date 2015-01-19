@@ -9,12 +9,11 @@ module UI =
     | Loading of string
     | Cancelling
     | Playing of Game * string option
+    | Finished of Player
 
   type UI =
 
     abstract member Go : unit -> unit
-
-    abstract member ShowWinner : Player -> unit
 
     abstract member Render : UIState -> unit
 

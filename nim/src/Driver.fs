@@ -126,6 +126,16 @@ module Driver =
         | _        -> return! ready (Some(sprintf "Unexpected message %A in state Cancelling" msg))
       }
 
+    and finished winner = async {
+      ui.Render (Finished winner)
+
+      let! msg = ev.Receive()
+
+      match msg with
+        | Load url -> return! loading url
+        | _        -> return! ready None
+      }
+
     and play (game:Game) ss = async {
       let game' = game.CheckTaunt()
 
@@ -135,10 +145,8 @@ module Driver =
 
       let winOrContinue (g:Game) s =
         match g.Winner () with
-          | None -> play g s
-          | Some player ->
-            ui.ShowWinner player
-            ready (Some "Game finished")
+          | None        -> play g s
+          | Some player -> finished player
 
       match msg with
         | Cancel       -> return! ready None

@@ -124,13 +124,6 @@ module GUI =
 
       member this.Go () = Application.Run window
 
-      member this.ShowWinner player =
-        let msg = match player with
-          | Human    -> "You won :)"
-          | Computer -> "You lost :'("
-        prompt "Game finished" msg
-        ignore <| board.Controls.Clear ()
-
       member this.Render (state : UIState) =
         match state with
           | Ready ss ->
@@ -150,7 +143,6 @@ module GUI =
             disable [loadButton; cancelButton; compButton]
 
           | Playing (game, ss) ->
-            printfn "turn: %A, heaps: %A" game.Turn game.Board.Heaps
             if game.DidTauntThisTurn then prompt "Computer says" tauntMsg
 
             match ss with
@@ -163,3 +155,15 @@ module GUI =
             drawBoard game.Board
 
             disable [loadButton]
+
+          | Finished player ->
+            let msg = match player with
+              | Human    -> "You won :)"
+              | Computer -> "You lost :'("
+            prompt "Game finished" msg
+
+            disable [cancelButton; compButton]
+
+            ignore <| board.Controls.Clear ()
+
+            setStatus "Game finished"
