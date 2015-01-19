@@ -52,7 +52,6 @@ module GUI =
     let board =
       new GroupBox(
         Enabled = false,
-        //Size = Size(300, 300),
         AutoSize = true,
         Location = Point(25, 150))
 
@@ -87,7 +86,7 @@ module GUI =
         MessageBoxButtons.OK,
         MessageBoxIcon.Warning)
 
-    let drawBoard (game : Game) =
+    let drawBoard (b : Board) =
       board.Controls.Clear()
 
       ignore <| List.mapi (fun y h ->
@@ -102,7 +101,7 @@ module GUI =
                             cb.Click.Add (fun _ -> moveFn (y, h - x))
 
                             board.Controls.Add(cb)) [ 0 .. h - 1 ]
-                 ) game.Board.Heaps
+                 ) b.Heaps
 
     do
       // listeners
@@ -124,6 +123,13 @@ module GUI =
     interface UI with
 
       member this.Go () = Application.Run window
+
+      member this.ShowWinner player =
+        let msg = match player with
+          | Human    -> "You won :)"
+          | Computer -> "You lost :'("
+        prompt "Game finished" msg
+        ignore <| board.Controls.Clear ()
 
       member this.Render (state : UIState) =
         match state with
@@ -154,18 +160,6 @@ module GUI =
             board.Enabled <- game.Turn = Human
             compButton.Enabled <- game.Turn = Computer
 
-            drawBoard game
+            drawBoard game.Board
 
             disable [loadButton]
-
-            // TODO: merge with above msg handling dauda
-            match game.Winner () with
-              | None -> ()
-              | Some player ->
-                let msg = match player with
-                  | Human    -> "You won :)"
-                  | Computer -> "You lost :'("
-
-                prompt "Game finished" msg
-                setStatus "Game finished"
-                disable [compButton]

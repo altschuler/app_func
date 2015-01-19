@@ -20,9 +20,8 @@ module CLI =
       ]
 
     let drawBoard (b : Board) =
-      printfn "%s" <| List.fold (fun acc h ->
-                                 sprintf "%s\n%s" acc (String.replicate h "x  ")
-                                 ) "" b.Heaps
+      let row i h = sprintf "%d: %s" i (String.replicate h "x  ")
+      printfn "%s" (String.concat "\n" (List.mapi row b.Heaps))
 
     let drawPrompt () = printf "> "
 
@@ -61,6 +60,14 @@ module CLI =
 
             | x        -> printError (sprintf "Unknown command '%s'" x)
 
+
+      member this.ShowWinner player =
+        let msg = match player with
+          | Human    -> "You won :)"
+          | Computer -> "You lost :'("
+        printfn "%s" msg
+
+
       member this.Render (state : UIState) =
         match state with
           | Ready ss ->
@@ -81,15 +88,7 @@ module CLI =
             match ss with
               | Some s -> printfn "%s" s
               | None   -> printfn "Make a move, %A!" game.Turn
+
             drawBoard game.Board
-
-            // TODO: merge with above msg handling dauda
-            match game.Winner () with
-              | None -> ()
-              | Some player ->
-                printfn "%s" <| match game.Turn with
-                  | Human    -> "You won :)"
-                  | Computer -> "You lost :'("
-
 
             drawPrompt ()

@@ -28,7 +28,6 @@ module Main =
 
   [<EntryPoint>]
   let main args =
-
     go (parseUI args)
 
     0

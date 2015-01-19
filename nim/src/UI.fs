@@ -14,7 +14,10 @@ module UI =
 
     abstract member Go : unit -> unit
 
+    abstract member ShowWinner : Player -> unit
+
     abstract member Render : UIState -> unit
+
 
   let tauntMsg = "You're gonna lose!"
 

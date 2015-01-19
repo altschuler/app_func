@@ -63,14 +63,16 @@ module Driver =
   let compFn _    = ev.Post ComputerMove
 
 
+  // helper
+
+  let tryMove (game:Game) move =
+    try (game.Move move, None)
+    with
+      | InvalidMove(s) -> (game, Some(s))
+
   // functions
 
   let go (ui : UI) =
-
-    let tryMove (game:Game) move =
-      try (game.Move move, None)
-      with
-        | InvalidMove(s) -> (game, Some(s))
 
     let rec ready (m : string option) = async {
       ui.Render (Ready m)
@@ -131,12 +133,21 @@ module Driver =
 
       let! msg = ev.Receive()
 
+      let winOrContinue (g:Game) s =
+        match g.Winner () with
+          | None -> play g s
+          | Some player ->
+            ui.ShowWinner player
+            ready (Some "Game finished")
+
       match msg with
         | Cancel       -> return! ready None
         | HumanMove m  ->
           let (game'', ss') = tryMove game' m
-          return! play game'' ss'
-        | ComputerMove -> return! play (game'.ComputerMove()) None // TODO: fix ai
+          return! winOrContinue game'' ss'
+        | ComputerMove ->
+          let game'' = game'.ComputerMove()
+          return! winOrContinue game'' None
         | _            -> return! play game' (Some(sprintf "Unexpected message %A in state Playing" msg))
       }
 

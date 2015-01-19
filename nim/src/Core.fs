@@ -53,6 +53,9 @@ module Core =
         | _ -> None
 
     member this.Move ((heap, number) : GameMove) : Game =
+      if number <= 0
+        then raise (InvalidMove "You must remove something")
+
       new Game(this.NextTurn (), (this.Board.Take heap number), this.DidTaunt, this.DidTauntThisTurn)
 
     member this.ComputerMove() : Game =
