@@ -13,7 +13,8 @@ module GUI =
     let window =
       new Form(
         Text = "Nim",
-        Size = Size(640, 480))
+        AutoSize = true,
+        Size = Size(640, 560))
 
     let label =
       new Label(
@@ -109,7 +110,6 @@ module GUI =
       cancelButton.Click.Add (fun _ -> cancelFn ())
       compButton.Click.Add   (fun _ -> compFn ())
 
-
       // finish
       window.Controls.Add status
       window.Controls.Add label
@@ -151,7 +151,6 @@ module GUI =
               | Some s -> setStatus s
               | None   -> setStatus (sprintf "Make a move, %A!" game.Turn)
 
-
             board.Enabled <- game.Turn = Human
             compButton.Enabled <- game.Turn = Computer
 
@@ -160,12 +159,13 @@ module GUI =
             disable [loadButton]
 
             // TODO: merge with above msg handling dauda
-            if game.Finished
-            then
-              let msg = match game.Turn with
-                | Human    -> "You won"
-                | Computer -> "You lost lol"
+            match game.Winner () with
+              | None -> ()
+              | Some player ->
+                let msg = match player with
+                  | Human    -> "You won :)"
+                  | Computer -> "You lost :'("
 
-              prompt "Game finished" msg
-              setStatus "Game finished"
-              disable [compButton]
+                prompt "Game finished" msg
+                setStatus "Game finished"
+                disable [compButton]

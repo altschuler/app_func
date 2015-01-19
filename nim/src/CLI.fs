@@ -84,7 +84,12 @@ module CLI =
             drawBoard game.Board
 
             // TODO: merge with above msg handling dauda
-            if game.Finished
-            then printfn "Game finished"
+            match game.Winner () with
+              | None -> ()
+              | Some player ->
+                printfn "%s" <| match game.Turn with
+                  | Human    -> "You won :)"
+                  | Computer -> "You lost :'("
+
 
             drawPrompt ()

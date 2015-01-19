@@ -26,6 +26,11 @@ module Core =
 
     member private this.NimSum = List.reduce (^^^)
 
+    member this.NextTurn () =
+      match this.Turn with
+        | Human -> Computer
+        | Computer -> Human
+
     member this.Turn = turn
 
     member this.Board = board
@@ -34,7 +39,7 @@ module Core =
 
     member this.DidTauntThisTurn = didTauntThisTurn
 
-    member this.CheckTaunt() =
+    member this.CheckTaunt () =
       if not didTaunt
         && (not didTauntThisTurn)
         && this.Turn = Human
@@ -42,17 +47,13 @@ module Core =
       then new Game(this.Turn, this.Board, true, true)
       else new Game(this.Turn, this.Board, this.DidTaunt, false)
 
-    member this.Finished = (List.sum this.Board.Heaps) = 0
+    member this.Winner () =
+      match List.sum this.Board.Heaps with
+        | 0 -> Some (this.NextTurn ())
+        | _ -> None
 
     member this.Move ((heap, number) : GameMove) : Game =
-      if this.Finished then raiseGameFinished ()
-
-      let newTurn =
-        match turn with
-          | Human -> Computer
-          | Computer -> Human
-
-      new Game(newTurn, (this.Board.Take heap number), this.DidTaunt, this.DidTauntThisTurn)
+      new Game(this.NextTurn (), (this.Board.Take heap number), this.DidTaunt, this.DidTauntThisTurn)
 
     member this.ComputerMove() : Game =
       let maxIndex = fst << List.maxBy snd << List.mapi (fun i x -> i, x)
