@@ -49,18 +49,11 @@ module GUI =
         Text = "Cancel")
 
     let board =
-      new Label(
-        Text = "",
-        Size = Size(300, 300),
+      new GroupBox(
+        Enabled = false,
+        //Size = Size(300, 300),
         AutoSize = true,
         Location = Point(25, 150))
-
-    let moveButton =
-      new Button(
-        Location = Point(450, 100),
-        MinimumSize = Size(50, 25),
-        MaximumSize = Size(50, 25),
-        Text = "Move")
 
     let compButton =
       new Button(
@@ -78,7 +71,6 @@ module GUI =
     let buttons : Button list = [
       loadButton;
       cancelButton;
-      moveButton;
       compButton
       ]
 
@@ -94,17 +86,29 @@ module GUI =
         MessageBoxButtons.OK,
         MessageBoxIcon.Warning)
 
-    let drawBoard (b : Board) =
-      board.Text <- List.fold (fun acc h ->
-                               sprintf "%s\n%s" acc (String.replicate h "x  ")
-                               ) "" b.Heaps
+    let drawBoard (game : Game) =
+      board.Controls.Clear()
+
+      ignore <| List.mapi (fun y h ->
+                 List.mapi (fun _ x ->
+                            let cb =
+                              new Button(
+                                BackgroundImage = matchImage,
+                                Location = Point(5 + x * 55, 10 + y * 55),
+                                MinimumSize = Size(50, 50),
+                                MaximumSize = Size(50, 50))
+
+                            cb.Click.Add (fun _ -> moveFn (y, h - x))
+
+                            board.Controls.Add(cb)) [ 0 .. h - 1 ]
+                 ) game.Board.Heaps
 
     do
       // listeners
       loadButton.Click.Add   (fun _ -> loadFn urlBox.Text)
       cancelButton.Click.Add (fun _ -> cancelFn ())
-      moveButton.Click.Add   (fun _ -> moveFn (0, 4))
       compButton.Click.Add   (fun _ -> compFn ())
+
 
       // finish
       window.Controls.Add status
@@ -113,7 +117,6 @@ module GUI =
       window.Controls.Add cancelButton
       window.Controls.Add loadButton
       window.Controls.Add board
-      window.Controls.Add moveButton
       window.Controls.Add compButton
 
     // functions
@@ -130,28 +133,39 @@ module GUI =
               | None   ->
                 setStatus "Welcome!"
                 urlBox.Text <- defaultUrl
-            disable [cancelButton; moveButton; compButton]
+            disable [cancelButton; compButton]
 
           | Loading url ->
             setStatus (sprintf "Fetching %s..." url)
-            disable [loadButton; moveButton; compButton]
+            disable [loadButton; compButton]
 
           | Cancelling ->
             setStatus "Cancelling..."
-            disable [loadButton; cancelButton; moveButton; compButton]
+            disable [loadButton; cancelButton; compButton]
 
           | Playing (game, ss) ->
+            printfn "turn: %A, heaps: %A" game.Turn game.Board.Heaps
             if game.DidTauntThisTurn then prompt "Computer says" tauntMsg
 
             match ss with
               | Some s -> setStatus s
               | None   -> setStatus (sprintf "Make a move, %A!" game.Turn)
 
-            drawBoard game.Board
+
+            board.Enabled <- game.Turn = Human
+            compButton.Enabled <- game.Turn = Computer
+
+            drawBoard game
+
             disable [loadButton]
 
             // TODO: merge with above msg handling dauda
             if game.Finished
             then
+              let msg = match game.Turn with
+                | Human    -> "You won"
+                | Computer -> "You lost lol"
+
+              prompt "Game finished" msg
               setStatus "Game finished"
-              disable [moveButton; compButton]
+              disable [compButton]

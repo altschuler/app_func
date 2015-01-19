@@ -55,13 +55,12 @@ module Core =
       new Game(newTurn, (this.Board.Take heap number), this.DidTaunt, this.DidTauntThisTurn)
 
     member this.ComputerMove() : Game =
-      let m = this.NimSum this.Board.Heaps
-      match m with
-        | 0 ->
-          let f (big, idx) heap = (max heap big, idx + 1)
-          let (_, bigIdx) = List.fold f (0, 0) this.Board.Heaps
-          this.Move(bigIdx - 1, 1) // idx is 1-based
-        | _ ->
+      let maxIndex = fst << List.maxBy snd << List.mapi (fun i x -> i, x)
+
+      match this.NimSum this.Board.Heaps with
+        | 0 -> // loosing
+          this.Move(maxIndex this.Board.Heaps, 1)
+        | m -> // winning
           let rec findMove idx = function
             | h::hs ->
               let ns = this.NimSum [m; h]
