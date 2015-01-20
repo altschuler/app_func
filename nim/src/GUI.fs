@@ -157,9 +157,10 @@ module GUI =
             disable [loadButton]
 
           | Finished player ->
-            let msg = match player with
-              | Human    -> "You won :)"
-              | Computer -> "You lost :'("
+            let msg =
+              match player with
+                | Human    -> "You won :)"
+                | Computer -> "You lost :'("
             prompt "Game finished" msg
 
             disable [cancelButton; compButton]

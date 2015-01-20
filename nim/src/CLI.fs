@@ -87,8 +87,9 @@ module CLI =
             drawPrompt ()
 
           | Finished player ->
-            let msg = match player with
-              | Human    -> "You won :)"
-              | Computer -> "You lost :'("
+            let msg =
+              match player with
+                | Human    -> "You won :)"
+                | Computer -> "You lost :'("
             printfn "Game finished: %s" msg
             drawPrompt ()
