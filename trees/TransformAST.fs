@@ -32,7 +32,28 @@ let rec tStm = function
 and tStms = List.collect tStm
 
 and tDecl = function
-  | _ -> n "Decl" []
+  | VarDec (_, e) ->
+    n (sprintf "VarDec %s : %s" "h" "f") (tExp e)
+  | ProcDec (retTy, isRec, name, args, body) ->
+    let recString = if isRec then "rec " else ""
+    n (sprintf "%sProcDec <%s>" recString (tType retTy)) (List.concat [(tTypedIds args); (tStm body)])
+  | ArrayDec (ti, len, init) ->
+    n "ArrayDec" (List.concat [tTypedId ti; tExp init])
+  | Decls(file) ->
+    n (sprintf "Decls %s" file) []
+
+and tTypedId (TypedId(t, i)) = n (sprintf "%s:%s" i (tType t)) []
+
+and tTypedIds = List.collect tTypedId
+
+and tType = function
+  | VoidT -> "void"
+  | IntT -> "int"
+  | BoolT -> "bool"
+  | StringT -> "string"
+  | RefT t -> sprintf "ref<%s>" (tType t)
+  | ArrayT t -> sprintf "array<%s>" (tType t)
+  | ProcT(t, ps) -> "proc"
 
 and tDecls = List.collect tDecl
 

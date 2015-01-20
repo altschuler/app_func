@@ -48,11 +48,11 @@ let dimensions tree extent =
   let maxExt = List.fold f (0.0, 0.0) extent
   let w = (snd maxExt) - (fst maxExt)
   let h = List.length extent
-  let (sw, sh) = (20.0, 45)
+  let (sw, sh) = (15.0, 45)
   (int (w * sw), sh * List.length extent)
 
 let drawTree (tree, extent) =
-  let scale = 40.0
+  let scale = 30.0
   let nh = 10.0
   let size = dimensions tree extent
   let lineStyle = drawCurve
