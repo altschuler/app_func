@@ -100,13 +100,14 @@ We have designed the program in a way that enforces strict separation of concern
 \item[Driver] Handles the flow of the program (see \ref{sec:fsa})
 \item[Exceptions] Implements some exceptions that can be thrown, for instance \texttt{InvalidMove} and \texttt{ParseError}
 \item[GUI] Defines the \texttt{GUI} variant of the game
-\item[CLI] Defines the \texttt{CLI} variant of the game
+\item[CLI] Defines the \texttt{CLI} variant of the game in which the user can type commands into a REPL-like environment
 \item[Service] The module that is responsible for fetching content from a URL
 \item[UI] Defines the interface that user interfaces must adhere to. Also defines the different states that a UI must be able to render (\texttt{UIState})
 \item[Utils] Some helper functions for lists and the parser of downloaded nim games
 \end{description}
 
 \section{Finite-State Automata}
+The finitie-state automata that describes the interactions possible when playing the game.
 \label{sec:fsa}
 \begin{figure}[H]
 \input{fsa.tex}
