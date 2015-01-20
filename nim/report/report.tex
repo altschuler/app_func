@@ -114,10 +114,23 @@ The {\tt Driver}, which contains the flow logic of the program, is given a user 
 The user interface is chosen run-time by passing the program a command line argument. Given then {\tt -nw} (no-window) argument, it uses the command-line interface, while the graphical interface is chosen by default.
 
 \section{Finite-State Automata}
-The finitie-state automata that describes the interactions possible when playing the game.
 \label{sec:fsa}
+We have made a finitie-state automata, found in the appendix~\ref{fig:fsa}, describing the possible states and transitions when playing the game.
+
+The possible states are:
+\begin{description}
+\item[{\tt ready}] The initial state where the user can choose to load a game from a given url, transitioning to {\tt loading}, or itself on everything else.
+\item[{\tt loading}] State trying to fetch the given url, which can transition into {\tt ready} on {\tt Error}, {\tt cancelling} on {\tt Cancel} or {\tt play} on {\tt Loaded}.
+\item[{\tt cancelling}] This is the callback state when cancelling a fetch. It transitions to {\tt ready}.
+\item[{\tt play}] State when playing a game, transitioning to {\tt ready} on {\tt Cancel}, {\tt finished} on {\tt Finished} or itself on everything else.
+\item[{\tt finished}] State when a game is finished, transitioning to {\tt loading} on {\tt Load} or {\tt ready} on everything else.
+\end{description}
+\clearpage
+\section{Appendix}
 \begin{figure}[H]
+\label{fig:fsa}
 \input{fsa.tex}
 \caption{Finite-State Automata}
 \end{figure}
+
 \end{document}
