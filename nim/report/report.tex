@@ -127,6 +127,25 @@ The possible states are:
 \end{description}
 \clearpage
 \section{Appendix}
+
+\subsection{Running}
+\subsubsection{On Linux}
+To run the program on Linux, we have a included a Makefile. This can be run with {\tt make} to build and run the graphical user interface, while {\tt make cli} runs the command-line interface.
+
+\subsubsection{On Windows}
+
+First compile the source code (in the given order)
+\begin{verbatim}
+fsharpc src/Utils.fs src/Exceptions.fs src/Core.fs \
+	src/Service.fs src/UI.fs src/GUI.fs \
+	src/CLI.fs src/Driver.fs src/Main.fs -o nim.exe
+\end{verbatim}
+and run executable (optionally with {\tt -nw} argument)
+\begin{verbatim}
+./nim.exe
+\end{verbatim}
+
+\subsection{Finite-State Automata}
 \begin{figure}[H]
 \label{fig:fsa}
 \input{fsa.tex}
