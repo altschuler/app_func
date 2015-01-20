@@ -106,6 +106,13 @@ We have designed the program in a way that enforces strict separation of concern
 \item[Utils] Some helper functions for lists and the parser of downloaded nim games
 \end{description}
 
+\section{User Interfaces}
+To demonstrate the modularity of this solution we have chosen to implement two different user interfaces, each implementing the {\tt UI} interface. We have made a graphical user interface (GUI) which uses {\tt Windows.Forms}, called {\tt GUI}, and a command-line interface with a read-eval-print loop (REPL), called {\tt CLI}.
+
+The {\tt Driver}, which contains the flow logic of the program, is given a user interface implementing the {\tt UI} interface, so the interface logic is completely encapsulated in the respective interface implementations.
+
+The user interface is chosen run-time by passing the program a command line argument. Given then {\tt -nw} (no-window) argument, it uses the command-line interface, while the graphical interface is chosen by default.
+
 \section{Finite-State Automata}
 The finitie-state automata that describes the interactions possible when playing the game.
 \label{sec:fsa}
