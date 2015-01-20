@@ -91,9 +91,23 @@ The computer only knows two states of the game:
 \end{description}
 
 \section{Modular design}
-We have designed the program in a way that enforces strict separation of concerns. To do this we made an interface called \texttt{UIState}
+We have designed the program in a way that enforces strict separation of concerns. Following is a brief description of each module and its responsibility:
+
+
+\begin{description}
+\item[Main] Bootstraps the
+\item[Core] Handles game logic of Nim, defines types \texttt{Heap}, \texttt{Board} and \texttt{Game} that expose functions such as \texttt{Move} and \texttt{ComputerMove}
+\item[Driver] Handles the flow of the program (see \ref{sec:fsa})
+\item[Exceptions] Implements some exceptions that can be thrown, for instance \texttt{InvalidMove} and \texttt{ParseError}
+\item[GUI] Defines the \texttt{GUI} variant of the game
+\item[CLI] Defines the \texttt{CLI} variant of the game
+\item[Service] The module that is responsible for fetching content from a URL
+\item[UI] Defines the interface that user interfaces must adhere to. Also defines the different states that a UI must be able to render (\texttt{UIState})
+\item[Utils] Some helper functions for lists and the parser of downloaded nim games
+\end{description}
 
 \section{Finite-State Automata}
+\label{sec:fsa}
 \begin{figure}[H]
 \input{fsa.tex}
 \caption{Finite-State Automata}

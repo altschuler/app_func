@@ -11,6 +11,5 @@ module Service =
     member this.Fetch(url:string) = async {
       let uri = new System.Uri(url)
       let webClient = new WebClient()
-      let! html = webClient.AsyncDownloadString(uri)
-      return html
+      return! webClient.AsyncDownloadString(uri)
       }
