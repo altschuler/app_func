@@ -1,0 +1,21 @@
+\begin{tikzpicture}[auto, thick, node distance=3.6cm, yscale=2.0]
+
+  \node[initial,state, minimum size=2cm] (ready)                            {{\tt ready}};
+  \node[state, minimum size=2cm]         (loading)    [right of=ready]      {{\tt loading}};
+  \node[state, minimum size=2cm]         (cancelling) [right of=loading]    {{\tt cancelling}};
+  \node[state, minimum size=2cm]         (play)       [right of=cancelling] {{\tt play}};
+  \node[state, minimum size=2cm]         (finished)   [right of=play]       {{\tt finished}};
+
+  \path[->] (ready) edge [loop above, yscale=0.5] node {{\tt *}}        (ready)
+                    edge                          node {{\tt Load}}     (loading)
+          (loading) edge                          node {{\tt Cancel}}   (cancelling)
+                    edge [bend left, below]       node {{\tt Loaded}}   (play)
+                    edge [bend left, pos=0.2]     node {{\tt Error, *}} (ready)
+       (cancelling) edge [bend left, pos=0.2]     node {{\tt *}}        (ready)
+             (play) edge [loop above, yscale=0.5] node {{\tt *}}        (play)
+                    edge [bend left, pos=0.2]     node {{\tt Cancel}}   (ready)
+                    edge                          node {{\tt Finished}} (finished)
+         (finished) edge [bend right, above]      node {{\tt Load}}     (loading)
+                    edge [bend left, pos=0.2]     node {{\tt *}}        (ready);
+
+\end{tikzpicture}
