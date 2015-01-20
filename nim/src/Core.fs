@@ -67,8 +67,8 @@ module Core =
         | m -> // winning
           let rec findMove idx = function
             | h::hs ->
-              let ns = this.NimSum [m; h]
-              if ns < h then (idx, h - ns) else findMove (idx + 1) hs
+              let m' = this.NimSum [m; h]
+              if m' < h then (idx, h - m') else findMove (idx + 1) hs
             | _ -> failwith "Mathematical!" // theoretically unreachable
 
           this.Move <| findMove 0 this.Board.Heaps

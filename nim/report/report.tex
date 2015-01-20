@@ -63,35 +63,39 @@
 \clearpage
 
 \section{Introduction}
-In this report we will describe our experience with TODO
+In this report we will describe our experience with implementing the game Nim in F\# using asynchronuos computations.
 
+A note on Nim rules; there are two variations of the game namely mis\`ere and normal play. We have implemented normal play meaning that the winner is the one who takes the last match.
 
 \section{Status}
-TODO
+The game implements all required as well as optional features. The \texttt{Nim.Driver} modules, which manages the flow of application control, utilizes F\#'s \texttt{async} capabilities along with Don Syme's \texttt{AsyncEventQueue}.
+
+The game can fetch games from URLs in the given format, namely a sorted list of heap sizes separated by space.
+
+It is possible to play against the computer, which will punish even the slightest inaccurate move with certain victory. It does this by following a set of fairly simple rules.
+
+We have designed the program in a modular way have achieved a good separation of concerns. To demonstrate that, we have implemented two different user interfaces; a GUI and a CLI. The compiled executable can be run with the command line argument \texttt{-nw} to use the CLI.
+
+The GUI is somewhat pleasing to use, and allows the user to remove matches by clicking on the desired row at the number of matches to remove.
+
+A taunt messages appears when the user slips and lets the computer take the advantage and permanently establish the coming victory.
+
+\section{Computer player}
+To implement the AI one must compute the so-called nim sum of the board. This is a simple matter of XOR'ing all heaps on the board.
+
+The computer only knows two states of the game:
+\begin{description}
+\item[Nim sum is $0$:] This is the loosing state and the AI will just remove a single match from the largest heap and hope for the user to blunder.
+
+\item[Nim sum is not $0$:] This is the winning state and to stay in the lead we must find a move that yields a state with a nim sum of $0$. This is done by identifying a heap which decreases when XOR'ed with the nim sum. The optimal move is then to reduce that heap's size by the computed nim sum.
+\end{description}
+
+\section{Modular design}
+We have designed the program in a way that enforces strict separation of concerns. To do this we made an interface called \texttt{UIState}
 
 \section{Finite-State Automata}
 \begin{figure}[H]
-\begin{tikzpicture}[auto, thick, node distance=3.6cm, yscale=2.0]
-
-  \node[initial,state, minimum size=2cm] (ready)                            {{\tt ready}};
-  \node[state, minimum size=2cm]         (loading)    [right of=ready]      {{\tt loading}};
-  \node[state, minimum size=2cm]         (cancelling) [right of=loading]    {{\tt cancelling}};
-  \node[state, minimum size=2cm]         (play)       [right of=cancelling] {{\tt play}};
-  \node[state, minimum size=2cm]         (finished)   [right of=play]       {{\tt finished}};
-
-  \path[->] (ready) edge [loop above, yscale=0.5] node {{\tt *}}        (ready)
-                    edge                          node {{\tt Load}}     (loading)
-          (loading) edge                          node {{\tt Cancel}}   (cancelling)
-                    edge [bend left, below]       node {{\tt Loaded}}   (play)
-                    edge [bend left, pos=0.2]     node {{\tt Error, *}} (ready)
-       (cancelling) edge [bend left, pos=0.2]     node {{\tt *}}        (ready)
-             (play) edge [loop above, yscale=0.5] node {{\tt *}}        (play)
-                    edge [bend left, pos=0.2]     node {{\tt Cancel}}   (ready)
-                    edge                          node {{\tt Finished}} (finished)
-         (finished) edge [bend right, above]      node {{\tt Load}}     (loading)
-                    edge [bend left, pos=0.2]     node {{\tt *}}        (ready);
-
-\end{tikzpicture}
+\input{fsa.tex}
 \caption{Finite-State Automata}
 \end{figure}
 \end{document}
